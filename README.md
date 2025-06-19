@@ -4,6 +4,10 @@
 
 如有需求，请微信搜索 兴趣Coder
 
+公众号文章：5秒钟了解如何将McpTool的调用结果直接返回
+[spring-ai-alibaba-mcp-example](spring-ai-alibaba-mcp-example)
+
+
 
 
 ## 许可证
