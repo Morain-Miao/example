@@ -1,25 +1,15 @@
-FROM python:3.12
+FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install Poetry
-RUN curl -sSL https://install.python-poetry.org | python3 -
-ENV PATH="/root/.local/bin:$PATH"
-
-# Copy requirements first for better caching
 COPY server/requirements.txt .
-RUN pip install -r requirements.txt
 
-# Install mem0 in editable mode using Poetry
-WORKDIR /app/packages
-COPY pyproject.toml .
-COPY poetry.lock .
-COPY README.md .
-COPY mem0 ./mem0
-RUN pip install -e .[graph]
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Return to app directory and copy server code
-WORKDIR /app
-COPY server .
+COPY server/ .
+
+EXPOSE 8000
+
+ENV PYTHONUNBUFFERED=1
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

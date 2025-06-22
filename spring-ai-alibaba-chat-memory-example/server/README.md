@@ -26,3 +26,11 @@ Mem0 提供了一个 REST API 服务器（使用 FastAPI 编写）。用户可�
 OPENAI_API_KEY=sk-xxx   #你的阿里云百炼Api Key
 ```
 
+## 运行docker compose up
+```bash
+cd <your dir>
+docker compose up
+```
+
+## 访问swagger
+http://localhost:8888/docs

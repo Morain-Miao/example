@@ -16,7 +16,8 @@ load_dotenv()
 
 
 POSTGRES_HOST = os.environ.get("POSTGRES_HOST", "postgres")
-POSTGRES_PORT = os.environ.get("POSTGRES_PORT", "5432")
+POSTGRES_PORT_STR = os.environ.get("POSTGRES_PORT", "5432")
+POSTGRES_PORT = int(POSTGRES_PORT_STR) if POSTGRES_PORT_STR and POSTGRES_PORT_STR.strip() else 5432
 POSTGRES_DB = os.environ.get("POSTGRES_DB", "postgres")
 POSTGRES_USER = os.environ.get("POSTGRES_USER", "postgres")
 POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "postgres")
@@ -39,7 +40,7 @@ DEFAULT_CONFIG = {
         "provider": "pgvector",
         "config": {
             "host": POSTGRES_HOST,
-            "port": int(POSTGRES_PORT),
+            "port": POSTGRES_PORT,
             "dbname": POSTGRES_DB,
             "user": POSTGRES_USER,
             "password": POSTGRES_PASSWORD,
