@@ -37,10 +37,6 @@
 
 	<modules>
 		<module>server/mcp-webflux-server-example</module>
-		<module>server/mcp-stdio-server-example</module>
-
-		<module>client/mcp-stdio-client-example</module>
-		<module>client/mcp-streamable-client-example</module>
 		<module>client/mcp-webflux-client-example</module>
     </modules>
 
