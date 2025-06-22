@@ -48,10 +48,29 @@ DEFAULT_CONFIG = {
     },
     "graph_store": {
         "provider": "neo4j",
-        "config": {"url": NEO4J_URI, "username": NEO4J_USERNAME, "password": NEO4J_PASSWORD},
+        "config": {
+            "url": NEO4J_URI,
+            "username": NEO4J_USERNAME,
+            "password": NEO4J_PASSWORD
+        },
     },
-    "llm": {"provider": "openai", "config": {"api_key": OPENAI_API_KEY, "temperature": 0.2, "model": "gpt-4o"}},
-    "embedder": {"provider": "openai", "config": {"api_key": OPENAI_API_KEY, "model": "text-embedding-3-small"}},
+    "llm": {
+        "provider": "openai",
+        "config": {
+            "api_key": OPENAI_API_KEY,
+            "temperature": 0.2,
+            "model": "qwen-turbo",
+            "openai_base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+        }
+    },
+    "embedder": {
+        "provider": "openai",
+        "config": {
+            "api_key": OPENAI_API_KEY,
+            "model": "text-embedding-v4",
+            "openai_base_url": "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding"
+        }
+    },
     "history_db_path": HISTORY_DB_PATH,
 }
 
