@@ -1,17 +1,28 @@
-# Mem0 REST API Server
+# Mem0 REST API 服务器
 
-Mem0 provides a REST API server (written using FastAPI). Users can perform all operations through REST endpoints. The API also includes OpenAPI documentation, accessible at `/docs` when the server is running.
+Mem0 提供了一个 REST API 服务器（使用 FastAPI 编写）。用户可通过 REST 端点执行所有操作。该 API 还包含 OpenAPI 文档，服务器运行时可通过 `/docs` 端点访问。
 
-## Features
+## 功能特性
 
-- **Create memories:** Create memories based on messages for a user, agent, or run.
-- **Retrieve memories:** Get all memories for a given user, agent, or run.
-- **Search memories:** Search stored memories based on a query.
-- **Update memories:** Update an existing memory.
-- **Delete memories:** Delete a specific memory or all memories for a user, agent, or run.
-- **Reset memories:** Reset all memories for a user, agent, or run.
-- **OpenAPI Documentation:** Accessible via `/docs` endpoint.
+- **创建记忆**：基于消息为用户、代理或运行任务创建记忆。
+- **检索记忆**：获取指定用户、代理或运行任务的所有记忆。
+- **搜索记忆**：根据查询条件搜索已存储的记忆。
+- **更新记忆**：修改现有记忆的内容。
+- **删除记忆**：删除特定记忆，或清除某用户、代理或运行任务的全部记忆。
+- **重置记忆**：清空某用户、代理或运行任务的所有记忆。
+- **OpenAPI 文档**：通过 `/docs` 端点在线查看。
 
-## Running the server
+## 运行服务器
+请参考 [官方文档](https://docs.mem0.ai/open-source/features/rest-api) 中的说明启动服务器。
 
-Follow the instructions in the [docs](https://docs.mem0.ai/open-source/features/rest-api) to run the server.
+
+  ```bash
+  cp ./.env.example .env
+  ```
+
+## 编辑.env文件
+
+```text
+OPENAI_API_KEY=sk-xxx   #你的阿里云百炼Api Key
+```
+
