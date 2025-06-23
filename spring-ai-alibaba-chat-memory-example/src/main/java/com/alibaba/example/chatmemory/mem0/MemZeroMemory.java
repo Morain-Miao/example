@@ -86,7 +86,7 @@ public class MemZeroMemory {
 
         @Override
         public String toString() {
-            return "MemZeroRelation{" +
+            return "关系数据:{" +
                     "source='" + source + '\'' +
                     ", relationship='" + relationship + '\'' +
                     ", target='" + target + '\'' +
@@ -205,7 +205,7 @@ public class MemZeroMemory {
 
         @Override
         public String toString() {
-            return "MemZeroResults{" +
+            return "历史记忆数据:{" +
                     "id='" + id + '\'' +
                     ", memory='" + memory + '\'' +
                     ", hash='" + hash + '\'' +

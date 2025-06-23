@@ -31,7 +31,6 @@ public class MemZeroHttpClient {
     private static final String MEMORIES_ENDPOINT = "/memories";
     private static final String SEARCH_ENDPOINT = "/search";
     private static final String RESET_ENDPOINT = "/reset";
-    private static final String HEALTH_ENDPOINT = "/";
 
     /**
      * 构造函数
@@ -328,23 +327,4 @@ public class MemZeroHttpClient {
         }
     }
 
-    /**
-     * 健康检查
-     */
-    public boolean ping() {
-        try {
-            String response = webClient.get()
-                .uri(HEALTH_ENDPOINT)
-                .retrieve()
-                .bodyToMono(String.class)
-                .timeout(Duration.ofSeconds(5))
-                .block();
-            
-            logger.info("Mem0 API is healthy");
-            return true;
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "Mem0 API health check failed: " + e.getMessage(), e);
-            return false;
-        }
-    }
 } 
