@@ -56,16 +56,6 @@
 			<groupId>com.alibaba.cloud.ai</groupId>
 			<artifactId>spring-ai-alibaba-starter-memory</artifactId>
 		</dependency>
-		
-		<dependency>
-			<groupId>com.alibaba.cloud.ai</groupId>
-			<artifactId>spring-ai-alibaba-starter-memory-jdbc</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.alibaba.cloud.ai</groupId>
-			<artifactId>spring-ai-alibaba-starter-memory-redis</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>org.xerial</groupId>
@@ -74,27 +64,10 @@
 		</dependency>
 
 		<dependency>
-			<groupId>redis.clients</groupId>
-			<artifactId>jedis</artifactId>
-			<version>5.2.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>8.0.32</version>
-		</dependency>
-		
-		<dependency>
 			<groupId>org.springframework.ai</groupId>
 			<artifactId>spring-ai-advisors-vector-store</artifactId>
 		</dependency>
-		
-		<dependency>
-			<groupId>co.elastic.clients</groupId>
-			<artifactId>elasticsearch-java</artifactId>
-			<version>8.15.5</version>
-		</dependency>
+
 
 	</dependencies>
 

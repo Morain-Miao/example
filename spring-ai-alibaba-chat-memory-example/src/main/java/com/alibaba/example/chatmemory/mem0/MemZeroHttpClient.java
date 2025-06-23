@@ -1,5 +1,6 @@
 package com.alibaba.example.chatmemory.mem0;
 
+import com.alibaba.example.chatmemory.config.MemZeroConfig;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;

@@ -1,4 +1,4 @@
-package com.alibaba.example.chatmemory.mem0;
+package com.alibaba.example.chatmemory.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
