@@ -14,10 +14,14 @@ import java.util.List;
 
 import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
 
+/**
+ * @author miaoyumeng
+ * @date 2025/06/23 11:54
+ * @description TODO
+ */
 @RestController
 @RequestMapping("/advisor/memory/mem0")
 public class MemZeroMemoryController {
-
     private final ChatClient chatClient;
     private final int MAX_MESSAGES = 100;
     private final MessageWindowChatMemory messageWindowChatMemory;
@@ -30,15 +34,14 @@ public class MemZeroMemoryController {
 
         this.chatClient = builder
                 .defaultAdvisors(
-                        MessageChatMemoryAdvisor.builder(messageWindowChatMemory)
-                                .build()
+                        MessageChatMemoryAdvisor.builder(messageWindowChatMemory).build()
                 )
                 .build();
     }
 
     @GetMapping("/call")
-    public String call(@RequestParam(value = "query", defaultValue = "你好，我是万能的喵。我爱玩魔兽世界") String query,
-                       @RequestParam(value = "conversation_id", defaultValue = "miao") String conversationId
+    public String call(@RequestParam(value = "query", defaultValue = "你好，我是万能的喵，我爱玩三角洲行动") String query,
+                       @RequestParam(value = "conversation_id", defaultValue = "user") String conversationId
     ) {
         return chatClient.prompt(query)
                 .advisors(
@@ -48,7 +51,7 @@ public class MemZeroMemoryController {
     }
 
     @GetMapping("/messages")
-    public List<Message> messages(@RequestParam(value = "conversation_id", defaultValue = "miao") String conversationId) {
+    public List<Message> messages(@RequestParam(value = "conversation_id", defaultValue = "user") String conversationId) {
         return messageWindowChatMemory.get(conversationId);
     }
 }
