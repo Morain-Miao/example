@@ -78,22 +78,7 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
      */
     @Override
     public List<String> findConversationIds() {
-        try {
-            if (mem0Client != null) {
-                // 从 Mem0 获取所有记忆，然后提取用户ID
-                List<MemZeroMemory> allMemories = mem0Client.getAllMemories(null, null, null);
-                return allMemories.stream()
-                    .map(MemZeroMemory::getUserId)
-                    .filter(Objects::nonNull)
-                    .distinct()
-                    .collect(Collectors.toList());
-            }
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "Failed to get conversation IDs from Mem0: " + e.getMessage(), e);
-        }
-        
-        // 回退到缓存
-        return new ArrayList<>(conversationCache.keySet());
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /**
@@ -111,7 +96,7 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
         try {
             if (mem0Client != null) {
                 // 从 Mem0 获取该用户的所有记忆
-                List<MemZeroMemory> memories = mem0Client.getAllMemories(userId, null, null);
+                MemZeroMemory memories = mem0Client.getAllMemories(userId, null, null);
                 return convertMem0MemoriesToMessages(memories);
             }
         } catch (Exception e) {
@@ -241,36 +226,6 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
         conversationCache.clear();
     }
 
-    /**
-     * 获取对话数量
-     * 
-     * @return 对话数量
-     */
-    public int getConversationCount() {
-        return findConversationIds().size();
-    }
-
-    /**
-     * 获取总消息数
-     * 
-     * @return 总消息数
-     */
-    public int getTotalMessageCount() {
-        try {
-            if (mem0Client != null) {
-                // 获取所有记忆并计算总数
-                List<MemZeroMemory> allMemories = mem0Client.getAllMemories(null, null, null);
-                return allMemories.size();
-            }
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "Failed to get total message count from Mem0: " + e.getMessage(), e);
-        }
-        
-        // 回退到缓存统计
-        return conversationCache.values().stream()
-                .mapToInt(List::size)
-                .sum();
-    }
 
     /**
      * 检查用户是否有对话
@@ -313,7 +268,7 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
                 searchRequest.setQuery(query);
                 searchRequest.setUserId(userId);
                 
-                List<MemZeroMemory> memories = mem0Client.searchMemories(searchRequest);
+                MemZeroMemory memories = mem0Client.searchMemories(searchRequest);
                 List<Message> results = convertMem0MemoriesToMessages(memories);
                 
                 // 限制结果数量
@@ -345,30 +300,26 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
     /**
      * 将 Mem0 记忆转换为 Spring AI 消息
      */
-    private List<Message> convertMem0MemoriesToMessages(List<MemZeroMemory> memories) {
-        return memories.stream()
-                .map(this::convertMem0MemoryToMessage)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
+    private List<Message> convertMem0MemoriesToMessages(MemZeroMemory memories) {
 
-    /**
-     * 将单个 Mem0 记忆转换为 Spring AI 消息
-     */
-    private Message convertMem0MemoryToMessage(MemZeroMemory memory) {
-        String role = memory.getRole();
-        String content = memory.getContent();
-        
-        switch (role.toLowerCase()) {
-            case "user":
-                return new UserMessage(content);
-            case "assistant":
-                return new AssistantMessage(content);
-            case "system":
-                return new SystemMessage(content);
-            default:
-                logger.warning("Unknown message role: " + role);
-                return new UserMessage(content);
-        }
+        List<Message> messages = new ArrayList<>();
+
+        List<MemZeroMemory.MemZeroResults> results = memories.getResults();
+        List<MemZeroMemory.MemZeroRelation> relations = memories.getRelations();
+
+        results.forEach(result -> {
+            messages.add(SystemMessage.builder()
+                    .text(result.toString())
+                    .build());
+        });
+
+        relations.forEach(relation -> {
+            messages.add(SystemMessage.builder()
+                    .text(relation.toString())
+                    .build());
+        });
+
+
+        return messages;
     }
 }

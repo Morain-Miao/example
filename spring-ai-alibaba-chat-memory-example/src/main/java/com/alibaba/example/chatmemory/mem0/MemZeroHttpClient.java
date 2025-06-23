@@ -3,6 +3,7 @@ package com.alibaba.example.chatmemory.mem0;
 import com.alibaba.example.chatmemory.config.MemZeroChatMemoryProperties;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -37,7 +38,9 @@ public class MemZeroHttpClient {
      */
     public MemZeroHttpClient(MemZeroChatMemoryProperties config) {
         this.config = config;
+        
         this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
         
         // 创建 WebClient 连接到 Mem0 API
         this.webClient = WebClient.builder()
@@ -69,7 +72,7 @@ public class MemZeroHttpClient {
     /**
      * 添加记忆
      */
-    public Map<String, Object> addMemory(MemZeroRequest.MemoryCreate memoryCreate) {
+    public void addMemory(MemZeroRequest.MemoryCreate memoryCreate) {
         try {
             // 添加调试信息
             String requestJson = objectMapper.writeValueAsString(memoryCreate);
@@ -87,7 +90,6 @@ public class MemZeroHttpClient {
             if (response != null) {
                 Map<String, Object> result = objectMapper.readValue(response, new TypeReference<Map<String, Object>>() {});
                 logger.info("Successfully added memory with " + memoryCreate.getMessages().size() + " messages");
-                return result;
             }
         } catch (WebClientResponseException e) {
             String errorBody = e.getResponseBodyAsString();
@@ -104,14 +106,13 @@ public class MemZeroHttpClient {
             logger.log(Level.WARNING, "Failed to add memory: " + e.getMessage(), e);
             throw new RuntimeException("Failed to add memory", e);
         }
-        
-        return new HashMap<>();
+
     }
 
     /**
      * 获取所有记忆
      */
-    public List<MemZeroMemory> getAllMemories(String userId, String runId, String agentId) {
+    public MemZeroMemory getAllMemories(String userId, String runId, String agentId) {
         try {
             String response = webClient.get()
                 .uri(uriBuilder -> {
@@ -129,38 +130,13 @@ public class MemZeroHttpClient {
             
             if (response != null) {
                 // Mem0 服务返回 {"results":[],"relations":[]} 格式
-                Map<String, Object> responseMap = objectMapper.readValue(response, new TypeReference<Map<String, Object>>() {});
-                
-                // 检查是否有 results 字段包含数组
-                if (responseMap.containsKey("results")) {
-                    Object results = responseMap.get("results");
-                    if (results instanceof List) {
-                        List<MemZeroMemory> memories = objectMapper.convertValue(results, 
-                            new TypeReference<List<MemZeroMemory>>() {});
-                        logger.info("Retrieved " + memories.size() + " memories");
-                        return memories;
-                    }
-                }
-                
-                // 如果没有 results 字段，尝试直接解析为数组
-                try {
-                    List<MemZeroMemory> memories = objectMapper.readValue(response, 
-                        new TypeReference<List<MemZeroMemory>>() {});
-                    logger.info("Retrieved " + memories.size() + " memories");
-                    return memories;
-                } catch (Exception e) {
-                    logger.log(Level.WARNING, "Failed to parse response as array, trying as object: " + e.getMessage());
-                }
-                
-                // 如果都失败了，返回空列表
-                logger.warning("Could not parse memories from response: " + response);
-                return new ArrayList<>();
+                return objectMapper.readValue(response, new TypeReference<MemZeroMemory>() {});
             }
         } catch (Exception e) {
             logger.log(Level.WARNING, "Failed to get memories: " + e.getMessage(), e);
         }
         
-        return new ArrayList<>();
+        return new MemZeroMemory();
     }
 
     /**
@@ -191,7 +167,7 @@ public class MemZeroHttpClient {
     /**
      * 搜索记忆
      */
-    public List<MemZeroMemory> searchMemories(MemZeroRequest.SearchRequest searchRequest) {
+    public MemZeroMemory searchMemories(MemZeroRequest.SearchRequest searchRequest) {
         try {
             String response = webClient.post()
                 .uri(SEARCH_ENDPOINT)
@@ -204,38 +180,14 @@ public class MemZeroHttpClient {
             
             if (response != null) {
                 // Mem0 服务返回 {"results":[],"relations":[]} 格式
-                Map<String, Object> responseMap = objectMapper.readValue(response, new TypeReference<Map<String, Object>>() {});
-                
-                // 检查是否有 results 字段包含数组
-                if (responseMap.containsKey("results")) {
-                    Object results = responseMap.get("results");
-                    if (results instanceof List) {
-                        List<MemZeroMemory> memories = objectMapper.convertValue(results, 
-                            new TypeReference<List<MemZeroMemory>>() {});
-                        logger.info("Search returned " + memories.size() + " memories for query: " + searchRequest.getQuery());
-                        return memories;
-                    }
-                }
-                
-                // 如果没有 results 字段，尝试直接解析为数组
-                try {
-                    List<MemZeroMemory> memories = objectMapper.readValue(response, 
-                        new TypeReference<List<MemZeroMemory>>() {});
-                    logger.info("Search returned " + memories.size() + " memories for query: " + searchRequest.getQuery());
-                    return memories;
-                } catch (Exception e) {
-                    logger.log(Level.WARNING, "Failed to parse search response as array, trying as object: " + e.getMessage());
-                }
-                
-                // 如果都失败了，返回空列表
-                logger.warning("Could not parse search results from response: " + response);
-                return new ArrayList<>();
+                return objectMapper.readValue(response, new TypeReference<MemZeroMemory>() {});
+
             }
         } catch (Exception e) {
             logger.log(Level.WARNING, "Failed to search memories: " + e.getMessage(), e);
         }
-        
-        return new ArrayList<>();
+
+        return new MemZeroMemory();
     }
 
     /**
