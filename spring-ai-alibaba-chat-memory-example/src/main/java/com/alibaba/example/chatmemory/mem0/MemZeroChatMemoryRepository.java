@@ -5,6 +5,7 @@ import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
@@ -34,35 +35,14 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
     private static final Logger logger = Logger.getLogger(MemZeroChatMemoryRepository.class.getName());
     
     // Mem0 客户端
-    private final MemZeroHttpClient mem0Client;
-    
+    @Autowired
+    private MemZeroHttpClient mem0Client;
+
+    @Autowired
+    private MemZeroConfig memZeroConfig;
+
     // 内存缓存作为回退机制
-    private final Map<String, List<Message>> conversationCache;
-    
-
-    /**
-     * 构造函数，初始化 Mem0 客户端
-     */
-    public MemZeroChatMemoryRepository(MemZeroConfig memZeroConfig) {
-        this.mem0Client = initializeMem0Client(memZeroConfig);
-        this.conversationCache = memZeroConfig.isEnableCache() ? new ConcurrentHashMap<>() : new ConcurrentHashMap<>();
-    }
-
-    /**
-     * 初始化 Mem0 客户端
-     */
-    private MemZeroHttpClient initializeMem0Client(MemZeroConfig memZeroConfig) {
-        try {
-            // 初始化客户端 - 使用实际的实现类
-            MemZeroHttpClient client = new MemZeroHttpClient(memZeroConfig);
-            logger.info("Mem0 client initialized successfully");
-            return client;
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "Failed to initialize Mem0 client: " + e.getMessage(), e);
-            logger.warning("Falling back to in-memory storage only");
-            return null;
-        }
-    }
+    private final Map<String, List<Message>> conversationCache = new ConcurrentHashMap<>();
 
     /**
      * 查找所有对话ID（用户ID）
