@@ -69,7 +69,7 @@ DEFAULT_CONFIG = {
         "config": {
             "api_key": OPENAI_API_KEY,
             "model": "text-embedding-v4",
-            "openai_base_url": "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding"
+            "openai_base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1"
         }
     },
     "history_db_path": HISTORY_DB_PATH,

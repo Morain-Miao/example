@@ -1,6 +1,8 @@
 package com.alibaba.example.chatmemory.mem0;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +26,7 @@ public class MemZeroRequest {
         public void setContent(String content) { this.content = content; }
     }
     
-    public static class MemoryCreate {
+    public static class MemoryCreate implements Serializable {
         private List<Message> messages;
         
         @JsonProperty("user_id")
@@ -56,7 +58,7 @@ public class MemZeroRequest {
         public void setMetadata(Map<String, Object> metadata) { this.metadata = metadata; }
     }
     
-    public static class SearchRequest {
+    public static class SearchRequest implements Serializable{
         private String query;
         
         @JsonProperty("user_id")

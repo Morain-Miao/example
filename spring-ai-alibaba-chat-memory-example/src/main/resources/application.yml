@@ -7,4 +7,5 @@ spring:
       api-key: ${AI_DASHSCOPE_API_KEY}
 mem0:
   api:
-    base-url: http://127.0.0.1:8000
+    base-url: http://127.0.0.1:8888
+    max-retry-attempts: 0

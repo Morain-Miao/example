@@ -149,7 +149,7 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
                 MemZeroRequest.MemoryCreate memoryCreate = new MemZeroRequest.MemoryCreate();
                 memoryCreate.setMessages(mem0Messages);
                 memoryCreate.setUserId(userId);
-                
+
                 // 保存到 Mem0
                 mem0Client.addMemory(memoryCreate);
                 logger.info("Saved " + messages.size() + " messages to Mem0 for user " + userId);
@@ -293,7 +293,7 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
     public List<Message> getMessagesByType(String userId, String messageType) {
         List<Message> messages = findByConversationId(userId);
         return messages.stream()
-                .filter(message -> getMessageType(message).equalsIgnoreCase(messageType))
+                .filter(message -> message.getMessageType().getValue().equalsIgnoreCase(messageType))
                 .collect(Collectors.toList());
     }
 
@@ -339,7 +339,7 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
      * 将 Spring AI 消息转换为 Mem0 格式
      */
     private MemZeroRequest.Message convertMessageToMem0Format(Message message) {
-        return new MemZeroRequest.Message(getMessageType(message), message.getText());
+        return new MemZeroRequest.Message(message.getMessageType().getValue(), message.getText());
     }
 
     /**
@@ -370,42 +370,5 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
                 logger.warning("Unknown message role: " + role);
                 return new UserMessage(content);
         }
-    }
-
-    /**
-     * 获取消息类型
-     */
-    private String getMessageType(Message message) {
-        if (message instanceof UserMessage) {
-            return "user";
-        } else if (message instanceof AssistantMessage) {
-            return "assistant";
-        } else if (message instanceof SystemMessage) {
-            return "system";
-        } else {
-            return "unknown";
-        }
-    }
-
-    /**
-     * 检查 Mem0 客户端是否可用
-     */
-    public boolean isMem0Available() {
-        return mem0Client != null;
-    }
-
-    /**
-     * 获取 Mem0 客户端状态
-     */
-    public String getMem0Status() {
-        if (mem0Client != null) {
-            try {
-                boolean isHealthy = mem0Client.ping();
-                return isHealthy ? "CONNECTED" : "UNHEALTHY";
-            } catch (Exception e) {
-                return "ERROR: " + e.getMessage();
-            }
-        }
-        return "NOT_AVAILABLE";
     }
 }

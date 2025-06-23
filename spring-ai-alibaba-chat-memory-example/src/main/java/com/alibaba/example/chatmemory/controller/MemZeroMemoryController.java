@@ -1,6 +1,5 @@
 package com.alibaba.example.chatmemory.controller;
 
-import com.alibaba.cloud.ai.memory.jdbc.MysqlChatMemoryRepository;
 import com.alibaba.example.chatmemory.mem0.MemZeroChatMemoryRepository;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
