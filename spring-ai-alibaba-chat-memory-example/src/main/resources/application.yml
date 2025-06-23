@@ -21,4 +21,6 @@ spring:
               password: root
               driver-class-name: com.mysql.cj.jdbc.Driver
               enabled: true
-
+mem0:
+  api:
+    base-url: http://127.0.0.1:8000

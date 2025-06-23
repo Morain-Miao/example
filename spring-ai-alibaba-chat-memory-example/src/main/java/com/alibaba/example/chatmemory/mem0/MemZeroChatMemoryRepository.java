@@ -29,51 +29,32 @@ import java.util.stream.Collectors;
  * - 支持多种消息类型
  */
 @Component
-@Configuration
 public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
 
     private static final Logger logger = Logger.getLogger(MemZeroChatMemoryRepository.class.getName());
     
     // Mem0 客户端
-    private final MemZeroClient mem0Client;
+    private final MemZeroHttpClient mem0Client;
     
     // 内存缓存作为回退机制
-    private final Map<String, List<Message>> conversationCache = new ConcurrentHashMap<>();
+    private final Map<String, List<Message>> conversationCache;
     
-    // 配置参数
-    @Value("${mem0.api.key:}")
-    private String mem0ApiKey;
-    
-    @Value("${mem0.api.base-url:https://api.mem0.ai}")
-    private String mem0BaseUrl;
-    
-    @Value("${mem0.collection.name:spring-ai-chat}")
-    private String collectionName;
-    
-    @Value("${mem0.enable-cache:true}")
-    private boolean enableCache;
 
     /**
      * 构造函数，初始化 Mem0 客户端
      */
-    public MemZeroChatMemoryRepository() {
-        this.mem0Client = initializeMem0Client();
+    public MemZeroChatMemoryRepository(MemZeroConfig memZeroConfig) {
+        this.mem0Client = initializeMem0Client(memZeroConfig);
+        this.conversationCache = memZeroConfig.isEnableCache() ? new ConcurrentHashMap<>() : new ConcurrentHashMap<>();
     }
 
     /**
      * 初始化 Mem0 客户端
      */
-    private MemZeroClient initializeMem0Client() {
+    private MemZeroHttpClient initializeMem0Client(MemZeroConfig memZeroConfig) {
         try {
-            // 创建 Mem0 配置
-            MemZeroConfig config = MemZeroConfig.builder()
-                .apiKey(mem0ApiKey)
-                .baseUrl(mem0BaseUrl)
-                .collectionName(collectionName)
-                .build();
-            
             // 初始化客户端 - 使用实际的实现类
-            MemZeroClient client = new MemZeroClient(config);
+            MemZeroHttpClient client = new MemZeroHttpClient(memZeroConfig);
             logger.info("Mem0 client initialized successfully");
             return client;
         } catch (Exception e) {
@@ -92,8 +73,13 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
     public List<String> findConversationIds() {
         try {
             if (mem0Client != null) {
-                // 从 Mem0 获取所有用户ID
-                return mem0Client.getAllUserIds();
+                // 从 Mem0 获取所有记忆，然后提取用户ID
+                List<MemZeroMemory> allMemories = mem0Client.getAllMemories(null, null, null);
+                return allMemories.stream()
+                    .map(MemZeroMemory::getUserId)
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .collect(Collectors.toList());
             }
         } catch (Exception e) {
             logger.log(Level.WARNING, "Failed to get conversation IDs from Mem0: " + e.getMessage(), e);
@@ -117,8 +103,8 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
         
         try {
             if (mem0Client != null) {
-                // 从 Mem0 搜索该用户的所有消息
-                List<MemZeroMemory> memories = mem0Client.search("", Map.of("user_id", userId));
+                // 从 Mem0 获取该用户的所有记忆
+                List<MemZeroMemory> memories = mem0Client.getAllMemories(userId, null, null);
                 return convertMem0MemoriesToMessages(memories);
             }
         } catch (Exception e) {
@@ -148,12 +134,17 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
         try {
             if (mem0Client != null) {
                 // 转换消息为 Mem0 格式
-                List<Map<String, Object>> mem0Messages = messages.stream()
+                List<MemZeroRequest.Message> mem0Messages = messages.stream()
                     .map(this::convertMessageToMem0Format)
                     .collect(Collectors.toList());
                 
+                // 创建 MemoryCreate 请求
+                MemZeroRequest.MemoryCreate memoryCreate = new MemZeroRequest.MemoryCreate();
+                memoryCreate.setMessages(mem0Messages);
+                memoryCreate.setUserId(userId);
+                
                 // 保存到 Mem0
-                mem0Client.add(mem0Messages, Map.of("user_id", userId));
+                mem0Client.addMemory(memoryCreate);
                 logger.info("Saved " + messages.size() + " messages to Mem0 for user " + userId);
             }
         } catch (Exception e) {
@@ -161,12 +152,10 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
         }
         
         // 同时更新缓存
-        if (enableCache) {
-            List<Message> existingMessages = conversationCache.getOrDefault(userId, new ArrayList<>());
-            List<Message> allMessages = new ArrayList<>(existingMessages);
-            allMessages.addAll(messages);
-            conversationCache.put(userId, allMessages);
-        }
+        List<Message> existingMessages = conversationCache.getOrDefault(userId, new ArrayList<>());
+        List<Message> allMessages = new ArrayList<>(existingMessages);
+        allMessages.addAll(messages);
+        conversationCache.put(userId, allMessages);
     }
 
     /**
@@ -183,7 +172,7 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
         try {
             if (mem0Client != null) {
                 // 从 Mem0 删除该用户的所有记忆
-                mem0Client.deleteAll(userId);
+                mem0Client.deleteAllMemories(userId, null, null);
                 logger.info("Deleted all memories from Mem0 for user " + userId);
             }
         } catch (Exception e) {
@@ -234,7 +223,7 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
         try {
             if (mem0Client != null) {
                 // 从 Mem0 清空所有记忆
-                mem0Client.clearAll();
+                mem0Client.resetAllMemories();
                 logger.info("Cleared all memories from Mem0");
             }
         } catch (Exception e) {
@@ -262,7 +251,9 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
     public int getTotalMessageCount() {
         try {
             if (mem0Client != null) {
-                return mem0Client.getTotalMemoryCount();
+                // 获取所有记忆并计算总数
+                List<MemZeroMemory> allMemories = mem0Client.getAllMemories(null, null, null);
+                return allMemories.size();
             }
         } catch (Exception e) {
             logger.log(Level.WARNING, "Failed to get total message count from Mem0: " + e.getMessage(), e);
@@ -311,8 +302,19 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
         try {
             if (mem0Client != null) {
                 // 使用 Mem0 进行语义搜索
-                List<MemZeroMemory> memories = mem0Client.search(query, Map.of("user_id", userId), limit);
-                return convertMem0MemoriesToMessages(memories);
+                MemZeroRequest.SearchRequest searchRequest = new MemZeroRequest.SearchRequest();
+                searchRequest.setQuery(query);
+                searchRequest.setUserId(userId);
+                
+                List<MemZeroMemory> memories = mem0Client.searchMemories(searchRequest);
+                List<Message> results = convertMem0MemoriesToMessages(memories);
+                
+                // 限制结果数量
+                if (results.size() > limit) {
+                    results = results.subList(0, limit);
+                }
+                
+                return results;
             }
         } catch (Exception e) {
             logger.log(Level.WARNING, "Failed to search messages in Mem0: " + e.getMessage(), e);
@@ -329,11 +331,8 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
     /**
      * 将 Spring AI 消息转换为 Mem0 格式
      */
-    private Map<String, Object> convertMessageToMem0Format(Message message) {
-        Map<String, Object> mem0Message = new HashMap<>();
-        mem0Message.put("role", getMessageType(message));
-        mem0Message.put("content", message.getText());
-        return mem0Message;
+    private MemZeroRequest.Message convertMessageToMem0Format(Message message) {
+        return new MemZeroRequest.Message(getMessageType(message), message.getText());
     }
 
     /**
@@ -394,8 +393,8 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
     public String getMem0Status() {
         if (mem0Client != null) {
             try {
-                mem0Client.ping();
-                return "CONNECTED";
+                boolean isHealthy = mem0Client.ping();
+                return isHealthy ? "CONNECTED" : "UNHEALTHY";
             } catch (Exception e) {
                 return "ERROR: " + e.getMessage();
             }

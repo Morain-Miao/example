@@ -1,47 +1,36 @@
 package com.alibaba.example.chatmemory.mem0;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 
+@Configuration
 public class MemZeroConfig {
-    private final String apiKey;
-    private final String baseUrl;
-    private final String collectionName;
 
-    private MemZeroConfig(Builder builder) {
-        this.apiKey = builder.apiKey;
-        this.baseUrl = builder.baseUrl;
-        this.collectionName = builder.collectionName;
+    @Value("${mem0.api.base-url:http://localhost:8888}")
+    private String baseUrl;
+    
+    @Value("${mem0.enable-cache:true}")
+    private boolean enableCache;
+    
+    @Value("${mem0.timeout.seconds:30}")
+    private int timeoutSeconds;
+    
+    @Value("${mem0.retry.max-attempts:3}")
+    private int maxRetryAttempts;
+
+    public String getBaseUrl() { 
+        return baseUrl; 
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public boolean isEnableCache() {
+        return enableCache;
     }
-
-    public String getApiKey() { return apiKey; }
-    public String getBaseUrl() { return baseUrl; }
-    public String getCollectionName() { return collectionName; }
-
-    public static class Builder {
-        private String apiKey;
-        private String baseUrl = "https://api.mem0.ai";
-        private String collectionName = "spring-ai-chat";
-
-        public Builder apiKey(String apiKey) {
-            this.apiKey = apiKey;
-            return this;
-        }
-
-        public Builder baseUrl(String baseUrl) {
-            this.baseUrl = baseUrl;
-            return this;
-        }
-
-        public Builder collectionName(String collectionName) {
-            this.collectionName = collectionName;
-            return this;
-        }
-
-        public MemZeroConfig build() {
-            return new MemZeroConfig(this);
-        }
+    
+    public int getTimeoutSeconds() {
+        return timeoutSeconds;
+    }
+    
+    public int getMaxRetryAttempts() {
+        return maxRetryAttempts;
     }
 }
