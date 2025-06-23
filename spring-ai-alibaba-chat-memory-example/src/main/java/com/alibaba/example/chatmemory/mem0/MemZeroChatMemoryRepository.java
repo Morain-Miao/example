@@ -1,13 +1,19 @@
 package com.alibaba.example.chatmemory.mem0;
 
-import com.alibaba.example.chatmemory.config.MemZeroConfig;
+import com.alibaba.cloud.ai.memory.redis.RedisChatMemoryRepository;
+import com.alibaba.cloud.ai.memory.redis.serializer.MessageDeserializer;
+import com.alibaba.example.chatmemory.config.MemZeroChatMemoryProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,32 +22,54 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- * 真正集成 Mem0 的 ChatMemoryRepository 实现
- * 
- * 这个实现参考了 OpenMemory 的设计，真正调用 mem0 的内存系统
- * 来存储和检索对话历史，而不是仅仅使用内存存储。
- * 
- * 特性:
- * - 真正的 mem0 集成，使用向量存储和 LLM
- * - 支持语义搜索和记忆检索
- * - 线程安全的操作
- * - 完整的错误处理和回退机制
- * - 支持多种消息类型
+ * MemZeroMemoryRepository
  */
-@Component
 public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
 
     private static final Logger logger = Logger.getLogger(MemZeroChatMemoryRepository.class.getName());
-    
-    // Mem0 客户端
-    @Autowired
-    private MemZeroHttpClient mem0Client;
 
-    @Autowired
-    private MemZeroConfig memZeroConfig;
+    private final MemZeroHttpClient mem0Client;
+
+    private MemZeroChatMemoryRepository(MemZeroHttpClient mem0Client) {
+        Assert.notNull(mem0Client, "mem0Client cannot be null");
+        this.mem0Client = mem0Client;
+    }
 
     // 内存缓存作为回退机制
     private final Map<String, List<Message>> conversationCache = new ConcurrentHashMap<>();
+
+    public static MemZeroChatMemoryBuilder builder() {
+        return new MemZeroChatMemoryBuilder();
+    }
+
+    public static class MemZeroChatMemoryBuilder {
+
+        private MemZeroChatMemoryProperties properties;
+
+        private MemZeroHttpClient mem0Client;
+
+
+
+        public MemZeroChatMemoryRepository.MemZeroChatMemoryBuilder properties(MemZeroChatMemoryProperties properties) {
+            this.properties = properties;
+            return this;
+        }
+
+        public MemZeroChatMemoryRepository.MemZeroChatMemoryBuilder memZeroChatMemoryClient(MemZeroHttpClient mem0Client) {
+            this.mem0Client = mem0Client;
+            return this;
+        }
+
+        public MemZeroChatMemoryRepository build() {
+            if (mem0Client == null){
+                MemZeroHttpClient client = new MemZeroHttpClient(properties);
+                return new MemZeroChatMemoryRepository(client);
+            }
+            return new MemZeroChatMemoryRepository(mem0Client);
+        }
+
+    }
+
 
     /**
      * 查找所有对话ID（用户ID）

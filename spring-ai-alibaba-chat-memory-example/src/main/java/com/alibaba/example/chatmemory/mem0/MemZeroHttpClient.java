@@ -1,6 +1,6 @@
 package com.alibaba.example.chatmemory.mem0;
 
-import com.alibaba.example.chatmemory.config.MemZeroConfig;
+import com.alibaba.example.chatmemory.config.MemZeroChatMemoryProperties;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
@@ -18,14 +18,13 @@ import java.util.logging.Logger;
  * 直接调用 Mem0 REST API 接口
  * 参考文档: http://localhost:8888/docs
  */
-@Component
 public class MemZeroHttpClient {
 
     private static final Logger logger = Logger.getLogger(MemZeroHttpClient.class.getName());
     
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
-    private final MemZeroConfig config;
+    private final MemZeroChatMemoryProperties config;
     
     // Mem0 API 端点
     private static final String CONFIGURE_ENDPOINT = "/configure";
@@ -37,7 +36,7 @@ public class MemZeroHttpClient {
     /**
      * 构造函数
      */
-    public MemZeroHttpClient(MemZeroConfig config) {
+    public MemZeroHttpClient(MemZeroChatMemoryProperties config) {
         this.config = config;
         this.objectMapper = new ObjectMapper();
         
