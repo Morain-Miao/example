@@ -21,9 +21,9 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
 
     private static final Logger logger = Logger.getLogger(MemZeroChatMemoryRepository.class.getName());
 
-    private final MemZeroHttpClient mem0Client;
+    private final MemZeroServiceClient mem0Client;
 
-    private MemZeroChatMemoryRepository(MemZeroHttpClient mem0Client) {
+    private MemZeroChatMemoryRepository(MemZeroServiceClient mem0Client) {
         Assert.notNull(mem0Client, "mem0Client cannot be null");
         this.mem0Client = mem0Client;
     }
@@ -39,7 +39,7 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
 
         private MemZeroChatMemoryProperties properties;
 
-        private MemZeroHttpClient mem0Client;
+        private MemZeroServiceClient mem0Client;
 
 
 
@@ -48,14 +48,14 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
             return this;
         }
 
-        public MemZeroChatMemoryRepository.MemZeroChatMemoryBuilder memZeroChatMemoryClient(MemZeroHttpClient mem0Client) {
+        public MemZeroChatMemoryRepository.MemZeroChatMemoryBuilder memZeroChatMemoryClient(MemZeroServiceClient mem0Client) {
             this.mem0Client = mem0Client;
             return this;
         }
 
         public MemZeroChatMemoryRepository build() {
             if (mem0Client == null){
-                MemZeroHttpClient client = new MemZeroHttpClient(properties);
+                MemZeroServiceClient client = new MemZeroServiceClient(properties);
                 return new MemZeroChatMemoryRepository(client);
             }
             return new MemZeroChatMemoryRepository(mem0Client);

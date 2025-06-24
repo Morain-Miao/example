@@ -21,9 +21,9 @@ import java.util.logging.Logger;
  * 直接调用 Mem0 REST API 接口
  * 参考文档: http://localhost:8888/docs
  */
-public class MemZeroHttpClient {
+public class MemZeroServiceClient {
 
-    private static final Logger logger = Logger.getLogger(MemZeroHttpClient.class.getName());
+    private static final Logger logger = Logger.getLogger(MemZeroServiceClient.class.getName());
     
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
@@ -38,7 +38,7 @@ public class MemZeroHttpClient {
     /**
      * 构造函数
      */
-    public MemZeroHttpClient(MemZeroChatMemoryProperties config) {
+    public MemZeroServiceClient(MemZeroChatMemoryProperties config) {
         this.config = config;
         
         this.objectMapper = new ObjectMapper();
