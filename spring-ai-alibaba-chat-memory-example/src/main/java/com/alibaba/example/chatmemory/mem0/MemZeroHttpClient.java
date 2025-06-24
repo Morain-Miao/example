@@ -114,7 +114,7 @@ public class MemZeroHttpClient {
     /**
      * 获取所有记忆
      */
-    public MemZeroMemory getAllMemories(String userId, String runId, String agentId) {
+    public MemZeroMemoryResp getAllMemories(String userId, String runId, String agentId) {
         try {
             String response = webClient.get()
                 .uri(uriBuilder -> {
@@ -132,19 +132,19 @@ public class MemZeroHttpClient {
             
             if (response != null) {
                 // Mem0 服务返回 {"results":[],"relations":[]} 格式
-                return objectMapper.readValue(response, new TypeReference<MemZeroMemory>() {});
+                return objectMapper.readValue(response, new TypeReference<MemZeroMemoryResp>() {});
             }
         } catch (Exception e) {
             logger.log(Level.WARNING, "Failed to get memories: " + e.getMessage(), e);
         }
         
-        return new MemZeroMemory();
+        return new MemZeroMemoryResp();
     }
 
     /**
      * 获取单个记忆
      */
-    public MemZeroMemory getMemory(String memoryId) {
+    public MemZeroMemoryResp getMemory(String memoryId) {
         try {
             String response = webClient.get()
                 .uri(MEMORIES_ENDPOINT + "/{memoryId}", memoryId)
@@ -155,7 +155,7 @@ public class MemZeroHttpClient {
                 .block();
             
             if (response != null) {
-                MemZeroMemory memory = objectMapper.readValue(response, MemZeroMemory.class);
+                MemZeroMemoryResp memory = objectMapper.readValue(response, MemZeroMemoryResp.class);
                 logger.info("Retrieved memory: " + memoryId);
                 return memory;
             }
@@ -169,7 +169,7 @@ public class MemZeroHttpClient {
     /**
      * 搜索记忆
      */
-    public MemZeroMemory searchMemories(MemZeroRequest.SearchRequest searchRequest) {
+    public MemZeroMemoryResp searchMemories(MemZeroRequest.SearchRequest searchRequest) {
         try {
             String response = webClient.post()
                 .uri(SEARCH_ENDPOINT)
@@ -182,14 +182,14 @@ public class MemZeroHttpClient {
             
             if (response != null) {
                 // Mem0 服务返回 {"results":[],"relations":[]} 格式
-                return objectMapper.readValue(response, new TypeReference<MemZeroMemory>() {});
+                return objectMapper.readValue(response, new TypeReference<MemZeroMemoryResp>() {});
 
             }
         } catch (Exception e) {
             logger.log(Level.WARNING, "Failed to search memories: " + e.getMessage(), e);
         }
 
-        return new MemZeroMemory();
+        return new MemZeroMemoryResp();
     }
 
     /**

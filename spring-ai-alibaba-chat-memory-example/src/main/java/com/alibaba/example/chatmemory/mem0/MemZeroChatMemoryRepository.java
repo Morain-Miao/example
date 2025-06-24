@@ -89,7 +89,7 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
         try {
             if (mem0Client != null) {
                 // 从 Mem0 获取该用户的所有记忆
-                MemZeroMemory memories = mem0Client.getAllMemories(userId, null, null);
+                MemZeroMemoryResp memories = mem0Client.getAllMemories(userId, null, null);
                 return convertMem0MemoriesToMessages(memories);
             }
         } catch (Exception e) {
@@ -108,13 +108,9 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
      */
     @Override
     public void saveAll(String userId, List<Message> messages) {
-        if (userId == null || userId.trim().isEmpty()) {
-            throw new IllegalArgumentException("User ID cannot be null or empty");
-        }
-        
-        if (messages == null || messages.isEmpty()) {
-            return;
-        }
+        Assert.hasText(userId, "User ID cannot be null or empty");
+        Assert.notNull(messages, "Messages cannot be null");
+        Assert.noNullElements(messages, "messages cannot contain null elements");
         
         try {
             if (mem0Client != null) {
@@ -261,7 +257,7 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
                 searchRequest.setQuery(query);
                 searchRequest.setUserId(userId);
                 
-                MemZeroMemory memories = mem0Client.searchMemories(searchRequest);
+                MemZeroMemoryResp memories = mem0Client.searchMemories(searchRequest);
                 List<Message> results = convertMem0MemoriesToMessages(memories);
                 
                 // 限制结果数量
@@ -293,12 +289,12 @@ public class MemZeroChatMemoryRepository implements ChatMemoryRepository {
     /**
      * 将 Mem0 记忆转换为 Spring AI 消息
      */
-    private List<Message> convertMem0MemoriesToMessages(MemZeroMemory memories) {
+    private List<Message> convertMem0MemoriesToMessages(MemZeroMemoryResp memories) {
 
         List<Message> messages = new ArrayList<>();
 
-        List<MemZeroMemory.MemZeroResults> results = memories.getResults();
-        List<MemZeroMemory.MemZeroRelation> relations = memories.getRelations();
+        List<MemZeroMemoryResp.MemZeroResults> results = memories.getResults();
+        List<MemZeroMemoryResp.MemZeroRelation> relations = memories.getRelations();
 
         results.forEach(result -> {
             messages.add(SystemMessage.builder()
