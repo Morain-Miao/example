@@ -1,6 +1,11 @@
 package com.alibaba.example.chatmemory.config;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties(prefix = MemZeroChatMemoryProperties.RAG_PREFIX)
 public class MemZeroChatMemoryProperties {
+
+    public static final String RAG_PREFIX = "mem0.api";
 
     private String baseUrl = "http://localhost:8888";
     private boolean enableCache = true;

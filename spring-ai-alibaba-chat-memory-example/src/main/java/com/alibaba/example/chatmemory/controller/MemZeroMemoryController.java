@@ -1,10 +1,10 @@
 package com.alibaba.example.chatmemory.controller;
 
-import com.alibaba.example.chatmemory.mem0.MemZeroChatMemoryRepository;
+import com.alibaba.example.chatmemory.mem0.MemZeroChatMemoryAdvisor;
+import com.alibaba.example.chatmemory.mem0.MemZeroRequest;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.memory.MessageWindowChatMemory;
-import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,17 +24,13 @@ import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
 public class MemZeroMemoryController {
     private final ChatClient chatClient;
     private final int MAX_MESSAGES = 100;
-    private final MessageWindowChatMemory messageWindowChatMemory;
+    private final VectorStore store;
 
-    public MemZeroMemoryController(ChatClient.Builder builder, MemZeroChatMemoryRepository memZeroChatMemoryRepository) {
-        this.messageWindowChatMemory = MessageWindowChatMemory.builder()
-                .chatMemoryRepository(memZeroChatMemoryRepository)
-                .maxMessages(MAX_MESSAGES)
-                .build();
-
+    public MemZeroMemoryController(ChatClient.Builder builder, VectorStore store) {
+        this.store = store;
         this.chatClient = builder
                 .defaultAdvisors(
-                        MessageChatMemoryAdvisor.builder(messageWindowChatMemory).build()
+                        MemZeroChatMemoryAdvisor.builder(store).build()
                 )
                 .build();
     }
@@ -51,7 +47,9 @@ public class MemZeroMemoryController {
     }
 
     @GetMapping("/messages")
-    public List<Message> messages(@RequestParam(value = "conversation_id", defaultValue = "user") String conversationId) {
-        return messageWindowChatMemory.get(conversationId);
+    public List<Document> messages(@RequestParam(value = "conversation_id", defaultValue = "user") String conversationId) {
+        MemZeroRequest.SearchRequest searchRequest = MemZeroRequest.SearchRequest.Builder.builder().query("我的爱好是什么？").userId("miao").build();
+        List<Document> documents = store.similaritySearch(searchRequest);
+        return documents;
     }
 }

@@ -87,7 +87,7 @@ public class MemZeroMemoryResp {
 
         @Override
         public String toString() {
-            return "关系数据:{" +
+            return "MemZeroRelation:{" +
                     "source='" + source + '\'' +
                     ", relationship='" + relationship + '\'' +
                     ", target='" + target + '\'' +
@@ -116,10 +116,13 @@ public class MemZeroMemoryResp {
         @JsonProperty("run_id")
         private String runId;
 
+        @JsonProperty("score")
+        private Double score;
+
         public MemZeroResults() {
         }
 
-        public MemZeroResults(String id, String memory, String hash, Map<String, Object> metadata, String userId, ZonedDateTime createdAt, ZonedDateTime updatedAt, String agentId, String runId) {
+        public MemZeroResults(String id, String memory, String hash, Map<String, Object> metadata, String userId, ZonedDateTime createdAt, ZonedDateTime updatedAt, String agentId, String runId, Double score) {
             this.id = id;
             this.memory = memory;
             this.hash = hash;
@@ -129,6 +132,7 @@ public class MemZeroMemoryResp {
             this.updatedAt = updatedAt;
             this.agentId = agentId;
             this.runId = runId;
+            this.score = score;
         }
 
         // Getters and Setters
@@ -204,9 +208,17 @@ public class MemZeroMemoryResp {
             this.runId = runId;
         }
 
+        public Double getScore() {
+            return score;
+        }
+
+        public void setScore(Double score) {
+            this.score = score;
+        }
+
         @Override
         public String toString() {
-            return "历史记忆数据:{" +
+            return "MemZeroResults:{" +
                     "id='" + id + '\'' +
                     ", memory='" + memory + '\'' +
                     ", hash='" + hash + '\'' +
@@ -216,6 +228,7 @@ public class MemZeroMemoryResp {
                     ", updatedAt=" + updatedAt +
                     ", agentId='" + agentId + '\'' +
                     ", runId='" + runId + '\'' +
+                    ", score=" + score + '\'' +
                     '}';
         }
     }

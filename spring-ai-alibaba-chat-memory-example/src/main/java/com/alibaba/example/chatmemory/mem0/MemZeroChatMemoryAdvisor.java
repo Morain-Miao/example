@@ -3,13 +3,17 @@ package com.alibaba.example.chatmemory.mem0;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.api.AdvisorChain;
+import org.springframework.ai.chat.client.advisor.api.BaseAdvisor;
 import org.springframework.ai.chat.client.advisor.api.BaseChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.VectorStoreChatMemoryAdvisor;
+import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.document.DocumentMetadata;
 import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.util.StringUtils;
 import reactor.core.scheduler.Scheduler;
 
@@ -26,30 +30,10 @@ import java.util.stream.Collectors;
  * @since 1.0.0
  */
 public class MemZeroChatMemoryAdvisor implements BaseChatMemoryAdvisor {
-    public static final String TOP_K = "chat_memory_vector_store_top_k";
-
-    private static final String DOCUMENT_METADATA_CONVERSATION_ID = "conversationId";
-
-    private static final String DOCUMENT_METADATA_MESSAGE_TYPE = "messageType";
 
     public static final String RETRIEVED_DOCUMENTS = "mem0_retrieved_documents";
 
-    private static final int DEFAULT_TOP_K = 20;
-
-    private static final PromptTemplate DEFAULT_SYSTEM_PROMPT_TEMPLATE = new PromptTemplate("""
-			{instructions}
-
-			Use the long term conversation memory from the LONG_TERM_MEMORY section to provide accurate answers.
-
-			---------------------
-			LONG_TERM_MEMORY:
-			{long_term_memory}
-			---------------------
-			""");
-
     private final PromptTemplate systemPromptTemplate;
-
-    private final int defaultTopK;
 
     private final String defaultConversationId;
 
@@ -59,9 +43,8 @@ public class MemZeroChatMemoryAdvisor implements BaseChatMemoryAdvisor {
 
     private final MemZeroMemoryStore memZeroMemoryStore;
 
-    public MemZeroChatMemoryAdvisor(PromptTemplate systemPromptTemplate, int defaultTopK, String defaultConversationId, int order, Scheduler scheduler, MemZeroMemoryStore memZeroMemoryStore) {
+    public MemZeroChatMemoryAdvisor(PromptTemplate systemPromptTemplate, String defaultConversationId, int order, Scheduler scheduler, MemZeroMemoryStore memZeroMemoryStore) {
         this.systemPromptTemplate = systemPromptTemplate;
-        this.defaultTopK = defaultTopK;
         this.defaultConversationId = defaultConversationId;
         this.order = order;
         this.scheduler = scheduler;
@@ -118,14 +101,20 @@ public class MemZeroChatMemoryAdvisor implements BaseChatMemoryAdvisor {
         return chatClientResponse;
     }
 
-    private Document toDocument(Hit<Document> hit) {
-        Document document = hit.source();
-        Document.Builder documentBuilder = document.mutate();
-        if (hit.score() != null) {
-            documentBuilder.metadata(DocumentMetadata.DISTANCE.value(), 1 - hit.score().floatValue());
-            documentBuilder.score(hit.score());
-        }
-        return documentBuilder.build();
+    private List<Document> toDocuments(List<Message> messages, String conversationId) {
+        List<Document> docs = messages.stream().filter((m) -> m.getMessageType() == MessageType.USER || m.getMessageType() == MessageType.ASSISTANT).map((message) -> {
+            HashMap<String, Object> metadata = new HashMap((Map)(message.getMetadata() != null ? message.getMetadata() : new HashMap()));
+            metadata.put("conversationId", conversationId);
+            metadata.put("messageType", message.getMessageType().name());
+            if (message instanceof UserMessage userMessage) {
+                return Document.builder().text(userMessage.getText()).metadata(metadata).build();
+            } else if (message instanceof AssistantMessage assistantMessage) {
+                return Document.builder().text(assistantMessage.getText()).metadata(metadata).build();
+            } else {
+                throw new RuntimeException("Unknown message type: " + message.getMessageType());
+            }
+        }).toList();
+        return docs;
     }
 
     @Override
@@ -136,5 +125,50 @@ public class MemZeroChatMemoryAdvisor implements BaseChatMemoryAdvisor {
     @Override
     public int getOrder() {
         return this.order;
+    }
+
+    public static MemZeroChatMemoryAdvisor.Builder builder(VectorStore chatMemory) {
+        return new MemZeroChatMemoryAdvisor.Builder(chatMemory);
+    }
+
+    public static class Builder {
+        public static final String RETRIEVED_DOCUMENTS = "mem0_retrieved_documents";
+
+        private PromptTemplate systemPromptTemplate;
+        private String defaultConversationId;
+        private int order;
+        private Scheduler scheduler;
+        private MemZeroMemoryStore memZeroMemoryStore;
+
+        protected Builder(VectorStore vectorStore) {
+            this.defaultConversationId = "default";
+            this.scheduler = BaseAdvisor.DEFAULT_SCHEDULER;
+            this.order = -2147482648;
+            this.memZeroMemoryStore = (MemZeroMemoryStore) vectorStore;
+        }
+
+        public MemZeroChatMemoryAdvisor.Builder systemPromptTemplate(PromptTemplate systemPromptTemplate) {
+            this.systemPromptTemplate = systemPromptTemplate;
+            return this;
+        }
+
+        public MemZeroChatMemoryAdvisor.Builder conversationId(String conversationId) {
+            this.defaultConversationId = conversationId;
+            return this;
+        }
+
+        public MemZeroChatMemoryAdvisor.Builder scheduler(Scheduler scheduler) {
+            this.scheduler = scheduler;
+            return this;
+        }
+
+        public MemZeroChatMemoryAdvisor.Builder order(int order) {
+            this.order = order;
+            return this;
+        }
+
+        public MemZeroChatMemoryAdvisor build() {
+            return new MemZeroChatMemoryAdvisor(this.systemPromptTemplate, this.defaultConversationId, this.order, this.scheduler, this.memZeroMemoryStore);
+        }
     }
 }

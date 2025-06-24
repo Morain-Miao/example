@@ -9,3 +9,4 @@ mem0:
   api:
     base-url: http://127.0.0.1:8888
     max-retry-attempts: 0
+    enable: true
