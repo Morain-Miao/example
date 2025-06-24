@@ -92,10 +92,7 @@ public class MemZeroMemoryStore  implements InitializingBean, VectorStore {
 
     @Override
     public List<Document> similaritySearch(SearchRequest request) {
-
-        MemZeroRequest.SearchRequest search = MemZeroRequest.SearchRequest.Builder.builder()
-                .query(request.getQuery())
-                .build();
+        MemZeroRequest.SearchRequest search = (MemZeroRequest.SearchRequest) request;
 
         if (request.getFilterExpression() != null){
             String jsonStr = this.mem0FilterExpressionConverter.convertExpression(request.getFilterExpression());
@@ -139,11 +136,4 @@ public class MemZeroMemoryStore  implements InitializingBean, VectorStore {
         return documents;
 
     }
-
-//    public static Builder builder(RestClient restClient) {
-//        return new Builder(restClient, embeddingModel);
-//    }
-
-
-
 }

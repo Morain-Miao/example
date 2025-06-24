@@ -168,8 +168,11 @@ public class MemZeroRequest {
             setFilters(builder.filters);
         }
 
+        @Override
         public String getQuery() { return query; }
-        public void setQuery(String query) { this.query = query; }
+        public void setQuery(String query) { 
+            this.query = query; 
+        }
         
         public String getUserId() { return userId; }
         public void setUserId(String userId) { this.userId = userId; }
@@ -184,7 +187,7 @@ public class MemZeroRequest {
         public void setFilters(Map<String, Object> filters) { this.filters = filters; }
 
 
-        public static final class Builder {
+        public static class Builder{
             private String query;
             private String userId;
             private String runId;

@@ -56,7 +56,7 @@ public class MemZeroChatMemoryAdvisor implements BaseChatMemoryAdvisor {
         // 1. Search for similar documents in the vector store.
         String conversationId = getConversationId(request.context(), this.defaultConversationId);
         String query = request.prompt().getUserMessage() != null ? request.prompt().getUserMessage().getText() : "";
-        SearchRequest searchRequest = MemZeroSearchRequest.builder()
+        SearchRequest searchRequest = MemZeroRequest.SearchRequest.builder()
                 .query(query)
                 .build();
 

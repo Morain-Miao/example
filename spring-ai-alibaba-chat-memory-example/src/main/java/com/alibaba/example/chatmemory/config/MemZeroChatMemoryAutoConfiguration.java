@@ -1,7 +1,6 @@
 package com.alibaba.example.chatmemory.config;
 
 import com.alibaba.cloud.ai.autoconfigure.memory.ChatMemoryAutoConfiguration;
-import com.alibaba.example.chatmemory.mem0.MemZeroChatMemoryRepository;
 import com.alibaba.example.chatmemory.mem0.MemZeroMemoryStore;
 import com.alibaba.example.chatmemory.mem0.MemZeroServiceClient;
 import org.slf4j.Logger;
@@ -16,7 +15,6 @@ import org.springframework.context.annotation.Bean;
 @AutoConfiguration(
         before = {ChatMemoryAutoConfiguration.class}
 )
-@ConditionalOnClass({MemZeroChatMemoryRepository.class, MemZeroChatMemoryProperties.class})
 public class MemZeroChatMemoryAutoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(MemZeroChatMemoryAutoConfiguration.class);

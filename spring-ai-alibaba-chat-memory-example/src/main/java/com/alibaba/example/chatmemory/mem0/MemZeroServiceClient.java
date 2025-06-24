@@ -171,6 +171,10 @@ public class MemZeroServiceClient {
      */
     public MemZeroMemoryResp searchMemories(MemZeroRequest.SearchRequest searchRequest) {
         try {
+            // 添加调试日志
+            String requestJson = objectMapper.writeValueAsString(searchRequest);
+            logger.info("Sending search request to Mem0: " + requestJson);
+            
             String response = webClient.post()
                 .uri(SEARCH_ENDPOINT)
                 .bodyValue(searchRequest)
@@ -181,6 +185,7 @@ public class MemZeroServiceClient {
                 .block();
             
             if (response != null) {
+                logger.info("Received response from Mem0: " + response);
                 // Mem0 服务返回 {"results":[],"relations":[]} 格式
                 return objectMapper.readValue(response, new TypeReference<MemZeroMemoryResp>() {});
 
