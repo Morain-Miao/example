@@ -87,7 +87,12 @@ public class MemZeroMemoryStore  implements InitializingBean, VectorStore {
 
     @Override
     public void delete(Filter.Expression filterExpression) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("The Mem0 Server only supports delete operation that must include userId, agentId, or runId.");
+    }
+
+    @Override
+    public List<Document> similaritySearch(String query) {
+        throw new UnsupportedOperationException("The Mem0 Server only supports queries that must include userId, agentId, or runId.");
     }
 
     @Override
@@ -116,16 +121,24 @@ public class MemZeroMemoryStore  implements InitializingBean, VectorStore {
         List<Document> documents = Stream.concat(
                 results.stream().map(r -> {
                     Map<String, Object> meta = new HashMap<>();
+                    meta.put("type", "results");
                     meta.put("id", r.getId());
+                    meta.put("memory", r.getMemory());
                     meta.put("hash", r.getHash());
                     meta.put("created_at", r.getCreatedAt());
                     meta.put("updated_at", r.getUpdatedAt());
                     meta.put("user_id", r.getUserId());
+                    meta.put("agent_id", r.getAgentId());
+                    meta.put("run_id", r.getRunId());
+                    meta.put("score", r.getScore());
+                    meta.put("metadata", r.getMetadata());
+
                     if (r.getMetadata() != null) meta.putAll(r.getMetadata());
-                    return new Document(r.getMemory(), meta);
+                    return new Document(r.getId(), r.getMemory(), meta);
                 }),
                 relations.stream().map(rel -> {
                     Map<String, Object> meta = new HashMap<>();
+                    meta.put("type", "relations");
                     meta.put("source", rel.getSource());
                     meta.put("relationship", rel.getRelationship());
                     meta.put("target", rel.getTarget());

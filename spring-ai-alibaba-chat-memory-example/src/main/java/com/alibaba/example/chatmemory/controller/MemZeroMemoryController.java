@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
-import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
+import static com.alibaba.example.chatmemory.mem0.MemZeroChatMemoryAdvisor.USER_ID;
+
 
 /**
  * @author miaoyumeng
@@ -35,20 +37,21 @@ public class MemZeroMemoryController {
     }
 
     @GetMapping("/call")
-    public String call(@RequestParam(value = "query", defaultValue = "你好，我是万能的喵，我爱玩三角洲行动") String query,
-                       @RequestParam(value = "conversation_id", defaultValue = "user") String conversationId
+    public String call(@RequestParam(value = "message", defaultValue = "你好，我是万能的喵，我爱玩三角洲行动") String message,
+                       @RequestParam(value = "user_id", defaultValue = "miao") String userId
     ) {
-        return chatClient.prompt(query)
+        return chatClient.prompt(message)
                 .advisors(
-                        a -> a.param(CONVERSATION_ID, conversationId)
+                        a -> a.params(Map.of(USER_ID, userId))
                 )
                 .call().content();
     }
 
     @GetMapping("/messages")
-    public List<Document> messages(@RequestParam(value = "conversation_id", defaultValue = "user") String conversationId) {
-        MemZeroServerRequest.SearchRequest searchRequest = MemZeroServerRequest.SearchRequest.builder().query("我的爱好是什么？").userId("miao").build();
-        List<Document> documents = store.similaritySearch(searchRequest);
-        return documents;
+    public List<Document> messages(
+            @RequestParam(value = "query", defaultValue = "我的爱好是什么？") String query,
+            @RequestParam(value = "user_id", defaultValue = "miao") String userId) {
+        MemZeroServerRequest.SearchRequest searchRequest = MemZeroServerRequest.SearchRequest.builder().query(query).userId(userId).build();
+        return store.similaritySearch(searchRequest);
     }
 }

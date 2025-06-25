@@ -4,6 +4,7 @@ import com.alibaba.example.chatmemory.config.MemZeroChatMemoryProperties;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -42,7 +43,9 @@ public class MemZeroServiceClient {
         this.config = config;
         
         this.objectMapper = new ObjectMapper();
-        this.objectMapper.registerModule(new JavaTimeModule());
+        // 忽略空值和空集合
+        this.objectMapper.registerModule(new JavaTimeModule())
+                .setSerializationInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY);
         
         // 创建 WebClient 连接到 Mem0 API
         this.webClient = WebClient.builder()
@@ -171,6 +174,11 @@ public class MemZeroServiceClient {
      */
     public MemZeroServerResp searchMemories(MemZeroServerRequest.SearchRequest searchRequest) {
         try {
+            // SEARCH_ENDPOINT 要求query必须有值，所以做了一个回退机制
+            if (!StringUtils.hasText(searchRequest.getQuery())){
+                return getAllMemories(searchRequest.getUserId(), searchRequest.getRunId(), searchRequest.getAgentId());
+            }
+
             // 添加调试日志
             String requestJson = objectMapper.writeValueAsString(searchRequest);
             logger.info("Sending search request to Mem0: " + requestJson);
