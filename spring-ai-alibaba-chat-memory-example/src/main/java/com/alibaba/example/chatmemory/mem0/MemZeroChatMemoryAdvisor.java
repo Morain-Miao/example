@@ -1,7 +1,10 @@
 package com.alibaba.example.chatmemory.mem0;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
+import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.api.AdvisorChain;
 import org.springframework.ai.chat.client.advisor.api.BaseAdvisor;
 import org.springframework.ai.chat.client.advisor.api.BaseChatMemoryAdvisor;
@@ -13,6 +16,7 @@ import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import reactor.core.scheduler.Scheduler;
 
@@ -27,7 +31,7 @@ import java.util.stream.Collectors;
  */
 public class MemZeroChatMemoryAdvisor implements BaseChatMemoryAdvisor {
 
-    public static final String RETRIEVED_DOCUMENTS = "mem0_retrieved_documents";
+    private static final Logger logger = LoggerFactory.getLogger(MemZeroChatMemoryAdvisor.class);
 
     public static final String USER_ID = "user_id";
     public static final String AGENT_ID = "agent_id";
@@ -44,27 +48,27 @@ public class MemZeroChatMemoryAdvisor implements BaseChatMemoryAdvisor {
             LONG_TERM_MEMORY is a dictionary containing the search results, typically under a "results" type, and potentially "relations" type if graph store is enabled.
             Example:
             ```text
-            [
-            	 {
-            	  "type": "results", # vector store
-                  "id": "...", # memory id
-                  "memory": "...", # memory text
-                  "hash": "...",  # memory hash value
-                  "metadata": "...", # user custom dict
-                  "score": 0.3,   # relevance score: the higher the score, the more relevant.
-                  "created_at": "...", # created time
-                  "updated_at": null, # updated time
+            \\[
+            	 \\{
+            	  "type": "results", e.g.: vector store
+                  "id": "...", e.g.: memory id
+                  "memory": "...", e.g.: memory text
+                  "hash": "...",  e.g.: memory hash value
+                  "metadata": "...", e.g.: user custom dict
+                  "score": 0.3,   e.g.: relevance score: the higher the score, the more relevant.
+                  "created_at": "...", e.g.: created time
+                  "updated_at": null, e.g.: updated time
                   "user_id": "...",
                   "agent_id": "...",
                   "run_id": "..."
-                },
-            	{
-            	  "type": "relations", # graph store
-                  "source": "...", // e.g.: graph store source
-                  "relationship": "...", // e.g.: value is loves means hobby
+                \\},
+            	\\{
+            	  "type": "relations", e.g.: graph store
+                  "source": "...", e.g.: graph store source
+                  "relationship": "...", e.g.: value is loves means hobby
                   "destination": "...",
                   "target": "..."
-                }
+                \\}
             ]
             ```
    
@@ -92,8 +96,13 @@ public class MemZeroChatMemoryAdvisor implements BaseChatMemoryAdvisor {
     @Override
     public ChatClientRequest before(ChatClientRequest request, AdvisorChain advisorChain) {
         // 1. Search for similar documents in the vector store.
+        Assert.notNull(request.prompt().getUserMessage(), "User message cannot be null");
+        Assert.notEmpty(request.prompt().getUserMessage().getMetadata(), "Metadata cannot contain null elements");
+        Assert.isTrue(request.context().containsKey(USER_ID) || request.context().containsKey(AGENT_ID) || request.context().containsKey(RUN_ID), "user_id, agent_id, and run_id cannot all be null");
+
         UserMessage userMessage = request.prompt().getUserMessage();
         String query = userMessage != null ? userMessage.getText() : "";
+
 
         Map<String, Object> params = request.context();
         SearchRequest searchRequest = MemZeroServerRequest.SearchRequest.builder()
@@ -113,8 +122,11 @@ public class MemZeroChatMemoryAdvisor implements BaseChatMemoryAdvisor {
         String augmentedUserText = this.systemPromptTemplate
                 .render(Map.of("query", query, "long_term_memory", documentContext));
 
-        if (Objects.nonNull(userMessage) && StringUtils.hasText(query)) {
-            this.vectorStore.add(toDocuments(java.util.List.of(userMessage)));
+        Map<String, Object> metadata = userMessage.getMetadata();
+        metadata.putAll(params);
+
+        if (StringUtils.hasText(query)) {
+//            this.vectorStore.add(toDocuments(java.util.List.of(userMessage)));
         }
         // 4. Update ChatClientRequest with augmented prompt.
         return request.mutate()
@@ -130,12 +142,19 @@ public class MemZeroChatMemoryAdvisor implements BaseChatMemoryAdvisor {
             assistantMessages = chatClientResponse.chatResponse()
                     .getResults()
                     .stream()
-                    .map(g -> (Message) g.getOutput())
+                    .map(generation -> {
+                        Message message = generation.getOutput();
+                        message.getMetadata().putAll(chatClientResponse.context());
+                        return message;
+                    })
                     .toList();
         }
 
         // write mem0 memory
-        this.vectorStore.add(toDocuments(assistantMessages));
+        if (!assistantMessages.isEmpty()) {
+            logger.debug("before add assistant messages to mem0 , assistantMessages: {}", assistantMessages);
+            this.vectorStore.add(toDocuments(assistantMessages));
+        }
         return chatClientResponse;
     }
 
@@ -144,12 +163,13 @@ public class MemZeroChatMemoryAdvisor implements BaseChatMemoryAdvisor {
                 .map(message -> {
                     HashMap<String, Object> metadata = new HashMap<>(message.getMetadata() != null ? message.getMetadata() : new HashMap());
                     if (message instanceof UserMessage userMessage) {
-                        metadata.put("role", userMessage.getMessageType());
+                        metadata.put("role", userMessage.getMessageType().getValue());
                     } else if (message instanceof AssistantMessage assistantMessage) {
-                        metadata.put("role", assistantMessage.getMessageType());
+                        metadata.put("role", assistantMessage.getMessageType().getValue());
                     } else {
-                        throw new RuntimeException("Unknown message type: " + message.getMessageType());
+                        throw new RuntimeException("Unknown message type: " + message.getMessageType().getValue());
                     }
+                    metadata.putAll(message.getMetadata());
 
                     return Document.builder()
                             .text(message.getText())

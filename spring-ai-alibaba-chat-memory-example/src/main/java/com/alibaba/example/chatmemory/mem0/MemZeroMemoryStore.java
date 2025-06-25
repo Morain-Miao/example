@@ -14,7 +14,10 @@ import org.springframework.util.StringUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.alibaba.example.chatmemory.mem0.MemZeroChatMemoryAdvisor.*;
 
 /**
  * @author miaoyumeng
@@ -58,25 +61,18 @@ public class MemZeroMemoryStore  implements InitializingBean, VectorStore {
     @Override
     public void add(List<Document> documents) {
         //TODO 将role相同的message合并
-        List<MemZeroServerRequest.MemoryCreate> messages = documents.stream().map(doc -> {
-            MemZeroServerRequest.MemoryCreate create = MemZeroServerRequest.MemoryCreate.builder()
+        List<MemZeroServerRequest.MemoryCreate> messages = documents.stream().map(doc ->
+                MemZeroServerRequest.MemoryCreate.builder()
                     .messages(List.of(new MemZeroServerRequest.Message(
                             doc.getMetadata().get("role").toString(),
                             doc.getText()
                     )))
                     .metadata(doc.getMetadata())
-                    .build();
-            if (doc.getMetadata().containsKey("agentId")){
-                create.setAgentId(doc.getMetadata().get("agentId").toString());
-            }
-            if (doc.getMetadata().containsKey("runId")){
-                create.setRunId(doc.getMetadata().get("runId").toString());
-            }
-            if (doc.getMetadata().containsKey("userId")){
-                create.setUserId(doc.getMetadata().get("userId").toString());
-            }
-            return create;
-        }).toList();
+                    .agentId(doc.getMetadata().containsKey(AGENT_ID)?doc.getMetadata().get(AGENT_ID).toString():null)
+                    .runId(doc.getMetadata().containsKey(RUN_ID)?doc.getMetadata().get(RUN_ID).toString():null)
+                    .userId(doc.getMetadata().containsKey(USER_ID)?doc.getMetadata().get(USER_ID).toString():null)
+                    .build()
+        ).toList();
         //TODO 增加异步方式
         messages.forEach(mem0Client::addMemory);
     }
@@ -135,7 +131,7 @@ public class MemZeroMemoryStore  implements InitializingBean, VectorStore {
                     meta.put("metadata", result.getMetadata());
 
                     if (result.getMetadata() != null) meta.putAll(result.getMetadata());
-                    return new Document(result.getId(), result.getMemory(), meta);
+                    return new Document(result.getId(), result.getMemory(), filterNullElement(meta));
                 }),
                 relations.stream().map(relation -> {
                     Map<String, Object> meta = new HashMap<>();
@@ -143,12 +139,21 @@ public class MemZeroMemoryStore  implements InitializingBean, VectorStore {
                     meta.put("source", relation.getSource());
                     meta.put("relationship", relation.getRelationship());
                     meta.put("target", relation.getTarget());
-                    meta.put("destination", relation);
+                    meta.put("destination", relation.getDestination());
                     String text = relation.getSource() + " --[" + relation.getRelationship() + "]--> " + (StringUtils.hasText(relation.getTarget())?relation.getTarget():relation.getDestination());
-                    return new Document(text, meta);
+                    return new Document(text, filterNullElement(meta));
                 })
         ).toList();
         return documents;
 
+    }
+
+    private Map<String, Object> filterNullElement(Map<String, Object> map){
+        return map.entrySet().stream()
+                .filter(entry -> entry.getValue() != null && !"".equals(entry.getValue()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue
+                ));
     }
 }
