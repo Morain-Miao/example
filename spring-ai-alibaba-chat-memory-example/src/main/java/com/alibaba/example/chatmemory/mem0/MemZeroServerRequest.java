@@ -1,13 +1,12 @@
 package com.alibaba.example.chatmemory.mem0;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.ai.vectorstore.SearchRequest;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-public class MemZeroRequest {
+public class MemZeroServerRequest {
     
     public static class Message {
         private String role;

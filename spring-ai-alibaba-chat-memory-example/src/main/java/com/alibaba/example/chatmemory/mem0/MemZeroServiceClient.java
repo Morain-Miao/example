@@ -74,7 +74,7 @@ public class MemZeroServiceClient {
     /**
      * 添加记忆
      */
-    public void addMemory(MemZeroRequest.MemoryCreate memoryCreate) {
+    public void addMemory(MemZeroServerRequest.MemoryCreate memoryCreate) {
         try {
             // 添加调试信息
             String requestJson = objectMapper.writeValueAsString(memoryCreate);
@@ -114,7 +114,7 @@ public class MemZeroServiceClient {
     /**
      * 获取所有记忆
      */
-    public MemZeroMemoryResp getAllMemories(String userId, String runId, String agentId) {
+    public MemZeroServerResp getAllMemories(String userId, String runId, String agentId) {
         try {
             String response = webClient.get()
                 .uri(uriBuilder -> {
@@ -132,19 +132,19 @@ public class MemZeroServiceClient {
             
             if (response != null) {
                 // Mem0 服务返回 {"results":[],"relations":[]} 格式
-                return objectMapper.readValue(response, new TypeReference<MemZeroMemoryResp>() {});
+                return objectMapper.readValue(response, new TypeReference<MemZeroServerResp>() {});
             }
         } catch (Exception e) {
             logger.log(Level.WARNING, "Failed to get memories: " + e.getMessage(), e);
         }
         
-        return new MemZeroMemoryResp();
+        return new MemZeroServerResp();
     }
 
     /**
      * 获取单个记忆
      */
-    public MemZeroMemoryResp getMemory(String memoryId) {
+    public MemZeroServerResp getMemory(String memoryId) {
         try {
             String response = webClient.get()
                 .uri(MEMORIES_ENDPOINT + "/{memoryId}", memoryId)
@@ -155,7 +155,7 @@ public class MemZeroServiceClient {
                 .block();
             
             if (response != null) {
-                MemZeroMemoryResp memory = objectMapper.readValue(response, MemZeroMemoryResp.class);
+                MemZeroServerResp memory = objectMapper.readValue(response, MemZeroServerResp.class);
                 logger.info("Retrieved memory: " + memoryId);
                 return memory;
             }
@@ -169,7 +169,7 @@ public class MemZeroServiceClient {
     /**
      * 搜索记忆
      */
-    public MemZeroMemoryResp searchMemories(MemZeroRequest.SearchRequest searchRequest) {
+    public MemZeroServerResp searchMemories(MemZeroServerRequest.SearchRequest searchRequest) {
         try {
             // 添加调试日志
             String requestJson = objectMapper.writeValueAsString(searchRequest);
@@ -187,14 +187,14 @@ public class MemZeroServiceClient {
             if (response != null) {
                 logger.info("Received response from Mem0: " + response);
                 // Mem0 服务返回 {"results":[],"relations":[]} 格式
-                return objectMapper.readValue(response, new TypeReference<MemZeroMemoryResp>() {});
+                return objectMapper.readValue(response, new TypeReference<MemZeroServerResp>() {});
 
             }
         } catch (Exception e) {
             logger.log(Level.WARNING, "Failed to search memories: " + e.getMessage(), e);
         }
 
-        return new MemZeroMemoryResp();
+        return new MemZeroServerResp();
     }
 
     /**

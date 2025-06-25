@@ -5,7 +5,6 @@ import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.api.AdvisorChain;
 import org.springframework.ai.chat.client.advisor.api.BaseAdvisor;
 import org.springframework.ai.chat.client.advisor.api.BaseChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.vectorstore.VectorStoreChatMemoryAdvisor;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.MessageType;
@@ -56,7 +55,7 @@ public class MemZeroChatMemoryAdvisor implements BaseChatMemoryAdvisor {
         // 1. Search for similar documents in the vector store.
         String conversationId = getConversationId(request.context(), this.defaultConversationId);
         String query = request.prompt().getUserMessage() != null ? request.prompt().getUserMessage().getText() : "";
-        SearchRequest searchRequest = MemZeroRequest.SearchRequest.builder()
+        SearchRequest searchRequest = MemZeroServerRequest.SearchRequest.builder()
                 .query(query)
                 .build();
 

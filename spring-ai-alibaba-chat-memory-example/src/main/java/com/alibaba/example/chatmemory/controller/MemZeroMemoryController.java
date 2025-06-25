@@ -1,7 +1,7 @@
 package com.alibaba.example.chatmemory.controller;
 
 import com.alibaba.example.chatmemory.mem0.MemZeroChatMemoryAdvisor;
-import com.alibaba.example.chatmemory.mem0.MemZeroRequest;
+import com.alibaba.example.chatmemory.mem0.MemZeroServerRequest;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -48,7 +48,7 @@ public class MemZeroMemoryController {
 
     @GetMapping("/messages")
     public List<Document> messages(@RequestParam(value = "conversation_id", defaultValue = "user") String conversationId) {
-        MemZeroRequest.SearchRequest searchRequest = MemZeroRequest.SearchRequest.Builder.builder().query("我的爱好是什么？").userId("miao").build();
+        MemZeroServerRequest.SearchRequest searchRequest = MemZeroServerRequest.SearchRequest.Builder.builder().query("我的爱好是什么？").userId("miao").build();
         List<Document> documents = store.similaritySearch(searchRequest);
         return documents;
     }

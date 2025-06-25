@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class MemZeroMemoryResp {
+public class MemZeroServerResp {
 
     // 关系数据
     private List<MemZeroResults> results;
@@ -15,12 +15,12 @@ public class MemZeroMemoryResp {
     // 关系数据
     private List<MemZeroRelation> relations;
 
-    public MemZeroMemoryResp() {
+    public MemZeroServerResp() {
         this.relations = new ArrayList<>();
         this.results = new ArrayList<>();
     }
 
-    public MemZeroMemoryResp(List<MemZeroResults> results, List<MemZeroRelation> relations) {
+    public MemZeroServerResp(List<MemZeroResults> results, List<MemZeroRelation> relations) {
         this.results = results;
         this.relations = relations;
     }

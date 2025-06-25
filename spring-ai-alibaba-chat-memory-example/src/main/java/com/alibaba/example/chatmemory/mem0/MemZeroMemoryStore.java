@@ -57,9 +57,9 @@ public class MemZeroMemoryStore  implements InitializingBean, VectorStore {
     @Override
     public void add(List<Document> documents) {
         //TODO 将role相同的message合并
-        List<MemZeroRequest.MemoryCreate> messages = documents.stream().map(doc -> {
-            MemZeroRequest.MemoryCreate create = MemZeroRequest.MemoryCreate.Builder.builder()
-                    .messages(List.of(new MemZeroRequest.Message(
+        List<MemZeroServerRequest.MemoryCreate> messages = documents.stream().map(doc -> {
+            MemZeroServerRequest.MemoryCreate create = MemZeroServerRequest.MemoryCreate.Builder.builder()
+                    .messages(List.of(new MemZeroServerRequest.Message(
                             doc.getMetadata().get("role").toString(),
                             doc.getText()
                     )))
@@ -92,7 +92,7 @@ public class MemZeroMemoryStore  implements InitializingBean, VectorStore {
 
     @Override
     public List<Document> similaritySearch(SearchRequest request) {
-        MemZeroRequest.SearchRequest search = (MemZeroRequest.SearchRequest) request;
+        MemZeroServerRequest.SearchRequest search = (MemZeroServerRequest.SearchRequest) request;
 
         if (request.getFilterExpression() != null){
             String jsonStr = this.mem0FilterExpressionConverter.convertExpression(request.getFilterExpression());
@@ -109,9 +109,9 @@ public class MemZeroMemoryStore  implements InitializingBean, VectorStore {
             }
         }
 
-        MemZeroMemoryResp memZeroMemoryResp = mem0Client.searchMemories(search);
-        List<MemZeroMemoryResp.MemZeroResults> results = memZeroMemoryResp.getResults();
-        List<MemZeroMemoryResp.MemZeroRelation> relations = memZeroMemoryResp.getRelations();
+        MemZeroServerResp memZeroServerResp = mem0Client.searchMemories(search);
+        List<MemZeroServerResp.MemZeroResults> results = memZeroServerResp.getResults();
+        List<MemZeroServerResp.MemZeroRelation> relations = memZeroServerResp.getRelations();
 
         List<Document> documents = Stream.concat(
                 results.stream().map(r -> {
