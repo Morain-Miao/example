@@ -51,3 +51,7 @@ GET http://localhost:8080/advisor/memory/redis/call?query=你好，我的外号�
 ### 信息
 GET http://localhost:8080/advisor/memory/redis/messages?conversation_id=yingzi
 ```
+
+
+MATCH (n)
+DETACH DELETE n

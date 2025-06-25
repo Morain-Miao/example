@@ -48,7 +48,7 @@ services:
     networks:
       - mem0_network
     healthcheck:
-      test: wget bolt://neo4j:7687 || exit 1
+      test: wget bolt://neo4j:8687 || exit 1
       interval: 1s
       timeout: 10s
       retries: 20
