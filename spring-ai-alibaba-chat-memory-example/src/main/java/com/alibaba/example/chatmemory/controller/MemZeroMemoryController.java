@@ -23,7 +23,6 @@ import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
 @RequestMapping("/advisor/memory/mem0")
 public class MemZeroMemoryController {
     private final ChatClient chatClient;
-    private final int MAX_MESSAGES = 100;
     private final VectorStore store;
 
     public MemZeroMemoryController(ChatClient.Builder builder, VectorStore store) {
@@ -48,7 +47,7 @@ public class MemZeroMemoryController {
 
     @GetMapping("/messages")
     public List<Document> messages(@RequestParam(value = "conversation_id", defaultValue = "user") String conversationId) {
-        MemZeroServerRequest.SearchRequest searchRequest = MemZeroServerRequest.SearchRequest.Builder.builder().query("我的爱好是什么？").userId("miao").build();
+        MemZeroServerRequest.SearchRequest searchRequest = MemZeroServerRequest.SearchRequest.builder().query("我的爱好是什么？").userId("miao").build();
         List<Document> documents = store.similaritySearch(searchRequest);
         return documents;
     }

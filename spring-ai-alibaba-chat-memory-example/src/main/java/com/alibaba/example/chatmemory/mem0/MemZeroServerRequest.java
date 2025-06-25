@@ -1,6 +1,8 @@
 package com.alibaba.example.chatmemory.mem0;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
 
 import java.io.Serializable;
 import java.util.List;
@@ -97,6 +99,9 @@ public class MemZeroServerRequest {
         public Map<String, Object> getMetadata() { return metadata; }
         public void setMetadata(Map<String, Object> metadata) { this.metadata = metadata; }
 
+        public static Builder builder() {
+            return new Builder();
+        }
 
         public static final class Builder {
             private List<Message> messages;
@@ -160,11 +165,11 @@ public class MemZeroServerRequest {
         public SearchRequest() {}
 
         private SearchRequest(Builder builder) {
-            setQuery(builder.query);
-            setUserId(builder.userId);
-            setRunId(builder.runId);
-            setAgentId(builder.agentId);
-            setFilters(builder.filters);
+            this.query = builder.query;
+            this.agentId = builder.agentId;
+            this.userId = builder.userId;
+            this.runId = builder.runId;
+            this.filters = builder.filters;
         }
 
         @Override
@@ -185,20 +190,16 @@ public class MemZeroServerRequest {
         public Map<String, Object> getFilters() { return filters; }
         public void setFilters(Map<String, Object> filters) { this.filters = filters; }
 
+        public static Builder builder() {
+            return new Builder();
+        }
 
-        public static class Builder{
+        public static class Builder extends org.springframework.ai.vectorstore.SearchRequest.Builder {
             private String query;
             private String userId;
             private String runId;
             private String agentId;
             private Map<String, Object> filters;
-
-            private Builder() {
-            }
-
-            public static Builder builder() {
-                return new Builder();
-            }
 
             public Builder query(String val) {
                 query = val;

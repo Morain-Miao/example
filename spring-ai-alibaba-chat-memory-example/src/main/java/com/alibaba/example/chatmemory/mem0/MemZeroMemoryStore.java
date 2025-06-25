@@ -58,7 +58,7 @@ public class MemZeroMemoryStore  implements InitializingBean, VectorStore {
     public void add(List<Document> documents) {
         //TODO 将role相同的message合并
         List<MemZeroServerRequest.MemoryCreate> messages = documents.stream().map(doc -> {
-            MemZeroServerRequest.MemoryCreate create = MemZeroServerRequest.MemoryCreate.Builder.builder()
+            MemZeroServerRequest.MemoryCreate create = MemZeroServerRequest.MemoryCreate.builder()
                     .messages(List.of(new MemZeroServerRequest.Message(
                             doc.getMetadata().get("role").toString(),
                             doc.getText()
