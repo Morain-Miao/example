@@ -46,7 +46,7 @@ public class MemZeroChatMemoryAdvisor implements BaseChatMemoryAdvisor {
             ```text
             [
             	 {
-            	  "type": "results",
+            	  "type": "results", # vector store
                   "id": "...", # memory id
                   "memory": "...", # memory text
                   "hash": "...",  # memory hash value
@@ -59,10 +59,11 @@ public class MemZeroChatMemoryAdvisor implements BaseChatMemoryAdvisor {
                   "run_id": "..."
                 },
             	{
-            	  "type": "relations",
-                  "source": "...", // e.g.: means originated from user_id = _xxx
-                  "relationship": "...", // e.g.: loves means hobby
-                  "destination": "..."
+            	  "type": "relations", # graph store
+                  "source": "...", // e.g.: graph store source
+                  "relationship": "...", // e.g.: value is loves means hobby
+                  "destination": "...",
+                  "target": "..."
                 }
             ]
             ```
@@ -139,16 +140,21 @@ public class MemZeroChatMemoryAdvisor implements BaseChatMemoryAdvisor {
     }
 
     private List<Document> toDocuments(List<Message> messages) {
-        List<Document> docs = messages.stream().filter((m) -> m.getMessageType() == MessageType.USER || m.getMessageType() == MessageType.ASSISTANT).map((message) -> {
-            HashMap<String, Object> metadata = new HashMap<>(message.getMetadata() != null ? message.getMetadata() : new HashMap());
-            metadata.put("messageType", message.getMessageType().name());
-            if (message instanceof UserMessage userMessage) {
-                return Document.builder().text(userMessage.getText()).metadata(metadata).build();
-            } else if (message instanceof AssistantMessage assistantMessage) {
-                return Document.builder().text(assistantMessage.getText()).metadata(metadata).build();
-            } else {
-                throw new RuntimeException("Unknown message type: " + message.getMessageType());
-            }
+        List<Document> docs = messages.stream().filter((m) -> m.getMessageType() == MessageType.USER || m.getMessageType() == MessageType.ASSISTANT)
+                .map(message -> {
+                    HashMap<String, Object> metadata = new HashMap<>(message.getMetadata() != null ? message.getMetadata() : new HashMap());
+                    if (message instanceof UserMessage userMessage) {
+                        metadata.put("role", userMessage.getMessageType());
+                    } else if (message instanceof AssistantMessage assistantMessage) {
+                        metadata.put("role", assistantMessage.getMessageType());
+                    } else {
+                        throw new RuntimeException("Unknown message type: " + message.getMessageType());
+                    }
+
+                    return Document.builder()
+                            .text(message.getText())
+                            .metadata(metadata)
+                            .build();
         }).toList();
         return docs;
     }

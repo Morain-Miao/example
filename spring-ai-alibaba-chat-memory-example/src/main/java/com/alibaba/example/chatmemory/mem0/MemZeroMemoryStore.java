@@ -9,6 +9,7 @@ import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.filter.Filter;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -119,30 +120,31 @@ public class MemZeroMemoryStore  implements InitializingBean, VectorStore {
         List<MemZeroServerResp.MemZeroRelation> relations = memZeroServerResp.getRelations();
 
         List<Document> documents = Stream.concat(
-                results.stream().map(r -> {
+                results.stream().map(result -> {
                     Map<String, Object> meta = new HashMap<>();
                     meta.put("type", "results");
-                    meta.put("id", r.getId());
-                    meta.put("memory", r.getMemory());
-                    meta.put("hash", r.getHash());
-                    meta.put("created_at", r.getCreatedAt());
-                    meta.put("updated_at", r.getUpdatedAt());
-                    meta.put("user_id", r.getUserId());
-                    meta.put("agent_id", r.getAgentId());
-                    meta.put("run_id", r.getRunId());
-                    meta.put("score", r.getScore());
-                    meta.put("metadata", r.getMetadata());
+                    meta.put("id", result.getId());
+                    meta.put("memory", result.getMemory());
+                    meta.put("hash", result.getHash());
+                    meta.put("created_at", result.getCreatedAt());
+                    meta.put("updated_at", result.getUpdatedAt());
+                    meta.put("user_id", result.getUserId());
+                    meta.put("agent_id", result.getAgentId());
+                    meta.put("run_id", result.getRunId());
+                    meta.put("score", result.getScore());
+                    meta.put("metadata", result.getMetadata());
 
-                    if (r.getMetadata() != null) meta.putAll(r.getMetadata());
-                    return new Document(r.getId(), r.getMemory(), meta);
+                    if (result.getMetadata() != null) meta.putAll(result.getMetadata());
+                    return new Document(result.getId(), result.getMemory(), meta);
                 }),
-                relations.stream().map(rel -> {
+                relations.stream().map(relation -> {
                     Map<String, Object> meta = new HashMap<>();
                     meta.put("type", "relations");
-                    meta.put("source", rel.getSource());
-                    meta.put("relationship", rel.getRelationship());
-                    meta.put("target", rel.getTarget());
-                    String text = rel.getSource() + " --[" + rel.getRelationship() + "]--> " + rel.getTarget();
+                    meta.put("source", relation.getSource());
+                    meta.put("relationship", relation.getRelationship());
+                    meta.put("target", relation.getTarget());
+                    meta.put("destination", relation);
+                    String text = relation.getSource() + " --[" + relation.getRelationship() + "]--> " + (StringUtils.hasText(relation.getTarget())?relation.getTarget():relation.getDestination());
                     return new Document(text, meta);
                 })
         ).toList();

@@ -48,16 +48,18 @@ public class MemZeroServerResp {
     public static class MemZeroRelation {
         private String source;        // 源节点
         private String relationship;  // 关系类型
-        private String target;        // 目标节点
+        private String target;        // 目标路径
+        private String destination;   // 目的地
 
         // 默认构造函数
         public MemZeroRelation() {}
 
         // 完整构造函数
-        public MemZeroRelation(String source, String relationship, String target) {
+        public MemZeroRelation(String source, String relationship, String target, String destination) {
             this.source = source;
             this.relationship = relationship;
             this.target = target;
+            this.destination = destination;
         }
 
         // Getters and Setters
@@ -85,12 +87,21 @@ public class MemZeroServerResp {
             this.target = target;
         }
 
+        public String getDestination() {
+            return destination;
+        }
+
+        public void setDestination(String destination) {
+            this.destination = destination;
+        }
+
         @Override
         public String toString() {
-            return "MemZeroRelation:{" +
+            return "MemZeroRelation{" +
                     "source='" + source + '\'' +
                     ", relationship='" + relationship + '\'' +
                     ", target='" + target + '\'' +
+                    ", destination='" + destination + '\'' +
                     '}';
         }
     }
