@@ -60,7 +60,8 @@ public class MemZeroChatMemoryAdvisor implements BaseChatMemoryAdvisor {
                   "updated_at": null, e.g.: updated time
                   "user_id": "...",
                   "agent_id": "...",
-                  "run_id": "..."
+                  "run_id": "...",
+                  "role": "..."
                 \\},
             	\\{
             	  "type": "relations", e.g.: graph store

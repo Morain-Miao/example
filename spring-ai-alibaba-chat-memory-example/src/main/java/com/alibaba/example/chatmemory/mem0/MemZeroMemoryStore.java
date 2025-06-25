@@ -129,6 +129,7 @@ public class MemZeroMemoryStore  implements InitializingBean, VectorStore {
                     meta.put("run_id", result.getRunId());
                     meta.put("score", result.getScore());
                     meta.put("metadata", result.getMetadata());
+                    meta.put("role", result.getRole());
 
                     if (result.getMetadata() != null) meta.putAll(result.getMetadata());
                     return new Document(result.getId(), result.getMemory(), filterNullElement(meta));

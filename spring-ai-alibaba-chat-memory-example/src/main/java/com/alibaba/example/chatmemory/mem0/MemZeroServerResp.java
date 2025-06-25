@@ -130,10 +130,13 @@ public class MemZeroServerResp {
         @JsonProperty("score")
         private Double score;
 
+        @JsonProperty("role")
+        private String role;
+
         public MemZeroResults() {
         }
 
-        public MemZeroResults(String id, String memory, String hash, Map<String, Object> metadata, String userId, ZonedDateTime createdAt, ZonedDateTime updatedAt, String agentId, String runId, Double score) {
+        public MemZeroResults(String id, String memory, String hash, Map<String, Object> metadata, String userId, ZonedDateTime createdAt, ZonedDateTime updatedAt, String agentId, String runId, Double score, String role) {
             this.id = id;
             this.memory = memory;
             this.hash = hash;
@@ -227,9 +230,17 @@ public class MemZeroServerResp {
             this.score = score;
         }
 
+        public String getRole() {
+            return role;
+        }
+
+        public void setRole(String role) {
+            this.role = role;
+        }
+
         @Override
         public String toString() {
-            return "MemZeroResults:{" +
+            return "MemZeroResults{" +
                     "id='" + id + '\'' +
                     ", memory='" + memory + '\'' +
                     ", hash='" + hash + '\'' +
@@ -239,7 +250,8 @@ public class MemZeroServerResp {
                     ", updatedAt=" + updatedAt +
                     ", agentId='" + agentId + '\'' +
                     ", runId='" + runId + '\'' +
-                    ", score=" + score + '\'' +
+                    ", score=" + score +
+                    ", role='" + role + '\'' +
                     '}';
         }
     }
