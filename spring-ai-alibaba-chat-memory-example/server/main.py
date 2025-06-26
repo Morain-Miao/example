@@ -108,14 +108,32 @@ class SearchRequest(BaseModel):
     limit: int = Field(100, description="Maximum number of results to return.")
 
 
+# by Morain Miao
+def deep_merge_dicts(default: dict, override: dict) -> dict:
+    """递归合并两个字典，override 优先。"""
+    result = default.copy()
+    for k, v in override.items():
+        if (
+            k in result
+            and isinstance(result[k], dict)
+            and isinstance(v, dict)
+        ):
+            result[k] = deep_merge_dicts(result[k], v)
+        else:
+            result[k] = v
+    return result
+
+
 @app.post("/configure", summary="Configure Mem0")
 def set_config(config: Dict[str, Any]):
     """Set memory configuration."""
     global MEMORY_INSTANCE
-    MEMORY_INSTANCE = Memory.from_config(config)
-    # custom project level config by Morain Miao
+    # 合并 DEFAULT_CONFIG 和 config，config 优先
+    merged_config = deep_merge_dicts(DEFAULT_CONFIG, config)
+    MEMORY_INSTANCE = Memory.from_config(merged_config)
     if 'project' in config:
         MEMORY_INSTANCE.update_project(**config['project'])
+    # --- 
     return {"message": "Configuration set successfully"}
 
 
