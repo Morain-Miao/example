@@ -28,8 +28,12 @@ public class MemZeroChatMemoryAutoConfiguration {
     @Bean
     @ConditionalOnBean(MemZeroChatMemoryProperties.class)
     public MemZeroServiceClient elasticsearchRestClient(MemZeroChatMemoryProperties properties) {
-        logger.info("Initializing MemZeroService RestClient.");
-        return new MemZeroServiceClient(properties);
+        MemZeroServiceClient memZeroServiceClient = new MemZeroServiceClient(properties);
+        logger.info("Initialized MemZeroService Client.success!");
+        // 将client配置项交给Server初始化Mem0实例
+        memZeroServiceClient.configure(properties.getServer());
+        logger.info("Initialized MemZeroService Server success!.");
+        return memZeroServiceClient;
     }
 
     @Bean

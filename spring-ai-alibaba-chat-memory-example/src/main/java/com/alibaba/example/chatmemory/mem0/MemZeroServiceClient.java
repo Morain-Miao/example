@@ -1,6 +1,7 @@
 package com.alibaba.example.chatmemory.mem0;
 
 import com.alibaba.example.chatmemory.config.MemZeroChatMemoryProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -52,7 +53,7 @@ public class MemZeroServiceClient {
         
         // 创建 WebClient 连接到 Mem0 API
         this.webClient = WebClient.builder()
-            .baseUrl(config.getBaseUrl())
+            .baseUrl(config.getClient().getBaseUrl())
             .defaultHeader("Content-Type", "application/json")
             .build();
     }
@@ -60,17 +61,20 @@ public class MemZeroServiceClient {
     /**
      * 配置 Mem0
      */
-    public void configure(Map<String, Object> configMap) {
+    public void configure(MemZeroChatMemoryProperties.Server config) {
         try {
+            String requestJson = objectMapper.writeValueAsString(config);
             String response = webClient.post()
                 .uri(CONFIGURE_ENDPOINT)
-                .bodyValue(configMap)
+                .body(BodyInserters.fromValue(requestJson))
                 .retrieve()
                 .bodyToMono(String.class)
-                .timeout(Duration.ofSeconds(this.config.getTimeoutSeconds()))
+                .timeout(Duration.ofSeconds(this.config.getClient().getTimeoutSeconds()))
                 .block();
             
             logger.info("Mem0 configuration updated successfully");
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         } catch (Exception e) {
             logger.error("Failed to configure Mem0: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to configure Mem0", e);
@@ -91,8 +95,8 @@ public class MemZeroServiceClient {
                 .body(BodyInserters.fromValue(requestJson))
                 .retrieve()
                 .bodyToMono(String.class)
-                .timeout(Duration.ofSeconds(config.getTimeoutSeconds()))
-                .retry(config.getMaxRetryAttempts())
+                .timeout(Duration.ofSeconds(config.getClient().getTimeoutSeconds()))
+                .retry(config.getClient().getMaxRetryAttempts())
                 .block();
             
             if (response != null) {
@@ -125,8 +129,8 @@ public class MemZeroServiceClient {
                 })
                 .retrieve()
                 .bodyToMono(String.class)
-                .timeout(Duration.ofSeconds(config.getTimeoutSeconds()))
-                .retry(config.getMaxRetryAttempts())
+                .timeout(Duration.ofSeconds(config.getClient().getTimeoutSeconds()))
+                .retry(config.getClient().getMaxRetryAttempts())
                 .block();
             
             if (response != null) {
@@ -150,8 +154,8 @@ public class MemZeroServiceClient {
                 .uri(MEMORIES_ENDPOINT + "/{memoryId}", memoryId)
                 .retrieve()
                 .bodyToMono(String.class)
-                .timeout(Duration.ofSeconds(config.getTimeoutSeconds()))
-                .retry(config.getMaxRetryAttempts())
+                .timeout(Duration.ofSeconds(config.getClient().getTimeoutSeconds()))
+                .retry(config.getClient().getMaxRetryAttempts())
                 .block();
             
             if (response != null) {
@@ -187,8 +191,8 @@ public class MemZeroServiceClient {
                 .body(BodyInserters.fromValue(requestJson))
                 .retrieve()
                 .bodyToMono(String.class)
-                .timeout(Duration.ofSeconds(config.getTimeoutSeconds()))
-                .retry(config.getMaxRetryAttempts())
+                .timeout(Duration.ofSeconds(config.getClient().getTimeoutSeconds()))
+                .retry(config.getClient().getMaxRetryAttempts())
                 .block();
             
             if (response != null) {
@@ -215,8 +219,8 @@ public class MemZeroServiceClient {
                 .bodyValue(updatedMemory)
                 .retrieve()
                 .bodyToMono(String.class)
-                .timeout(Duration.ofSeconds(config.getTimeoutSeconds()))
-                .retry(config.getMaxRetryAttempts())
+                .timeout(Duration.ofSeconds(config.getClient().getTimeoutSeconds()))
+                .retry(config.getClient().getMaxRetryAttempts())
                 .block();
             
             if (response != null) {
@@ -241,7 +245,7 @@ public class MemZeroServiceClient {
                 .uri(MEMORIES_ENDPOINT + "/{memoryId}/history", memoryId)
                 .retrieve()
                 .bodyToMono(String.class)
-                .timeout(Duration.ofSeconds(config.getTimeoutSeconds()))
+                .timeout(Duration.ofSeconds(config.getClient().getTimeoutSeconds()))
                 .block();
             
             if (response != null) {
@@ -289,7 +293,7 @@ public class MemZeroServiceClient {
                 .uri(MEMORIES_ENDPOINT + "/{memoryId}", memoryId)
                 .retrieve()
                 .bodyToMono(String.class)
-                .timeout(Duration.ofSeconds(config.getTimeoutSeconds()))
+                .timeout(Duration.ofSeconds(config.getClient().getTimeoutSeconds()))
                 .block();
 
             logger.info("Successfully deleted memory: {}", memoryId);
@@ -314,7 +318,7 @@ public class MemZeroServiceClient {
                 })
                 .retrieve()
                 .bodyToMono(String.class)
-                .timeout(Duration.ofSeconds(config.getTimeoutSeconds()))
+                .timeout(Duration.ofSeconds(config.getClient().getTimeoutSeconds()))
                 .block();
             
             logger.info("Successfully deleted all memories");
@@ -333,7 +337,7 @@ public class MemZeroServiceClient {
                 .uri(RESET_ENDPOINT)
                 .retrieve()
                 .bodyToMono(String.class)
-                .timeout(Duration.ofSeconds(config.getTimeoutSeconds()))
+                .timeout(Duration.ofSeconds(config.getClient().getTimeoutSeconds()))
                 .block();
             
             logger.info("Successfully reset all memories");
