@@ -104,6 +104,8 @@ class SearchRequest(BaseModel):
     run_id: Optional[str] = None
     agent_id: Optional[str] = None
     filters: Optional[Dict[str, Any]] = None
+    # add limit param by Morain Miao
+    limit: int = Field(100, description="Maximum number of results to return.")
 
 
 @app.post("/configure", summary="Configure Mem0")
@@ -111,6 +113,9 @@ def set_config(config: Dict[str, Any]):
     """Set memory configuration."""
     global MEMORY_INSTANCE
     MEMORY_INSTANCE = Memory.from_config(config)
+    # custom project level config by Morain Miao
+    if 'project' in config:
+        MEMORY_INSTANCE.update_project(**config['project'])
     return {"message": "Configuration set successfully"}
 
 
