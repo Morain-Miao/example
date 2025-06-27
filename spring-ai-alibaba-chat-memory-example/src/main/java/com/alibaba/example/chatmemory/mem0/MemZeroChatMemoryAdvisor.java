@@ -126,7 +126,7 @@ public class MemZeroChatMemoryAdvisor implements BaseChatMemoryAdvisor {
         metadata.putAll(params);
 
         if (StringUtils.hasText(query)) {
-//            this.vectorStore.add(toDocuments(java.util.List.of(userMessage)));
+            this.vectorStore.add(toDocuments(java.util.List.of(userMessage)));
         }
         // 4. Update ChatClientRequest with augmented prompt.
         return request.mutate()
