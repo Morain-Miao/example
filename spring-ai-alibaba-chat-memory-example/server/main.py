@@ -76,7 +76,7 @@ DEFAULT_CONFIG = {
 }
 
 
-MEMORY_INSTANCE = Memory.from_config(DEFAULT_CONFIG)
+MEMORY_INSTANCE = None
 
 app = FastAPI(
     title="Mem0 REST APIs",
