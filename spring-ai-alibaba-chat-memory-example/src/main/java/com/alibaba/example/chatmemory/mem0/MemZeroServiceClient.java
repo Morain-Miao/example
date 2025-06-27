@@ -7,12 +7,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +36,7 @@ public class MemZeroServiceClient {
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
     private final MemZeroChatMemoryProperties config;
+    private final ResourceLoader resourceLoader;
     
     // Mem0 API 端点
     private static final String CONFIGURE_ENDPOINT = "/configure";
@@ -43,10 +47,12 @@ public class MemZeroServiceClient {
     /**
      * 构造函数
      */
-    public MemZeroServiceClient(MemZeroChatMemoryProperties config) {
+    public MemZeroServiceClient(MemZeroChatMemoryProperties config, ResourceLoader resourceLoader) {
         this.config = config;
-        
+        this.resourceLoader = resourceLoader;
         this.objectMapper = new ObjectMapper();
+        // json key序列化为_风格
+        this.objectMapper.setPropertyNamingStrategy(com.fasterxml.jackson.databind.PropertyNamingStrategies.SNAKE_CASE);
         // 忽略空值和空集合
         this.objectMapper.registerModule(new JavaTimeModule())
                 .setSerializationInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY);
@@ -63,6 +69,13 @@ public class MemZeroServiceClient {
      */
     public void configure(MemZeroChatMemoryProperties.Server config) {
         try {
+            config.getProject().setCustomInstructions(this.loadPrompt(config.getProject().getCustomInstructions()));
+            config.getProject().setCustomCategories(this.loadPrompt(config.getProject().getCustomCategories()));
+            config.setCustomFactExtractionPrompt(this.loadPrompt(config.getCustomFactExtractionPrompt()));
+            config.setCustomUpdateMemoryPrompt(this.loadPrompt(config.getCustomUpdateMemoryPrompt()));
+            config.getGraphStore().setCustomPrompt(this.loadPrompt(config.getGraphStore().getCustomPrompt()));
+
+
             String requestJson = objectMapper.writeValueAsString(config);
             String response = webClient.post()
                 .uri(CONFIGURE_ENDPOINT)
@@ -347,4 +360,15 @@ public class MemZeroServiceClient {
         }
     }
 
+    public String loadPrompt(String classPath) throws Exception {
+        if (StringUtils.hasText(classPath)){
+            Resource resource = resourceLoader.getResource(classPath);
+            if (!resource.exists()) {
+                throw new IllegalArgumentException("Prompt resource not found: " + classPath);
+            }
+            // 读取文件内容为字符串
+            return new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        }
+        return null;
+    }
 } 

@@ -4,10 +4,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Map;
 
-@ConfigurationProperties(prefix = MemZeroChatMemoryProperties.RAG_PREFIX)
+@ConfigurationProperties(prefix = MemZeroChatMemoryProperties.GRAPH_RAG_PREFIX)
 public class MemZeroChatMemoryProperties {
 
-    public static final String RAG_PREFIX = "mem0";
+    public static final String GRAPH_RAG_PREFIX = "mem0";
     private Client client;
     private Server server;
 
@@ -58,7 +58,31 @@ public class MemZeroChatMemoryProperties {
         private Llm llm;
         private Embedder embedder;
         private String historyDbPath;
+        private Project project;
+        private String customFactExtractionPrompt;
+        private String customUpdateMemoryPrompt;
 
+
+        public static class Project {
+            private String customCategories;
+            private String customInstructions;
+
+            public String getCustomCategories() {
+                return customCategories;
+            }
+
+            public void setCustomCategories(String customCategories) {
+                this.customCategories = customCategories;
+            }
+
+            public String getCustomInstructions() {
+                return customInstructions;
+            }
+
+            public void setCustomInstructions(String customInstructions) {
+                this.customInstructions = customInstructions;
+            }
+        }
 
         public static class VectorStore {
             private String provider;
@@ -301,6 +325,30 @@ public class MemZeroChatMemoryProperties {
 
         public void setHistoryDbPath(String historyDbPath) {
             this.historyDbPath = historyDbPath;
+        }
+
+        public Project getProject() {
+            return project;
+        }
+
+        public void setProject(Project project) {
+            this.project = project;
+        }
+
+        public String getCustomFactExtractionPrompt() {
+            return customFactExtractionPrompt;
+        }
+
+        public void setCustomFactExtractionPrompt(String customFactExtractionPrompt) {
+            this.customFactExtractionPrompt = customFactExtractionPrompt;
+        }
+
+        public String getCustomUpdateMemoryPrompt() {
+            return customUpdateMemoryPrompt;
+        }
+
+        public void setCustomUpdateMemoryPrompt(String customUpdateMemoryPrompt) {
+            this.customUpdateMemoryPrompt = customUpdateMemoryPrompt;
         }
     }
 

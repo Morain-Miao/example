@@ -10,11 +10,14 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.ResourceLoader;
 
 @AutoConfiguration(
         before = {ChatMemoryAutoConfiguration.class}
 )
+@ConditionalOnProperty(prefix = MemZeroChatMemoryProperties.GRAPH_RAG_PREFIX)
 public class MemZeroChatMemoryAutoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(MemZeroChatMemoryAutoConfiguration.class);
@@ -27,8 +30,8 @@ public class MemZeroChatMemoryAutoConfiguration {
 
     @Bean
     @ConditionalOnBean(MemZeroChatMemoryProperties.class)
-    public MemZeroServiceClient elasticsearchRestClient(MemZeroChatMemoryProperties properties) {
-        MemZeroServiceClient memZeroServiceClient = new MemZeroServiceClient(properties);
+    public MemZeroServiceClient elasticsearchRestClient(MemZeroChatMemoryProperties properties, ResourceLoader resourceLoader) {
+        MemZeroServiceClient memZeroServiceClient = new MemZeroServiceClient(properties, resourceLoader);
         logger.info("Initialized MemZeroService Client.success!");
         // 将client配置项交给Server初始化Mem0实例
         memZeroServiceClient.configure(properties.getServer());
