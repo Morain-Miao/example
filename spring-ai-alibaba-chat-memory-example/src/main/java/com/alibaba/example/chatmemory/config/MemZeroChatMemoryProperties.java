@@ -2,6 +2,7 @@ package com.alibaba.example.chatmemory.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @ConfigurationProperties(prefix = MemZeroChatMemoryProperties.GRAPH_RAG_PREFIX)
@@ -117,7 +118,12 @@ public class MemZeroChatMemoryProperties {
             }
 
             public Map<String, String> getConfig() {
-                return config;
+                Map<String, String> result = new HashMap<>();
+                for (Map.Entry<String, String> entry : config.entrySet()) {
+                    String key = entry.getKey().replace("-", "_");
+                    result.put(key, entry.getValue());
+                }
+                return result;
             }
 
             public void setConfig(Map<String, String> config) {
@@ -225,6 +231,38 @@ public class MemZeroChatMemoryProperties {
                 private double temperature;
                 private String model;
                 private String openaiBaseUrl;
+
+                public String getApiKey() {
+                    return apiKey;
+                }
+
+                public void setApiKey(String apiKey) {
+                    this.apiKey = apiKey;
+                }
+
+                public double getTemperature() {
+                    return temperature;
+                }
+
+                public void setTemperature(double temperature) {
+                    this.temperature = temperature;
+                }
+
+                public String getModel() {
+                    return model;
+                }
+
+                public void setModel(String model) {
+                    this.model = model;
+                }
+
+                public String getOpenaiBaseUrl() {
+                    return openaiBaseUrl;
+                }
+
+                public void setOpenaiBaseUrl(String openaiBaseUrl) {
+                    this.openaiBaseUrl = openaiBaseUrl;
+                }
             }
         }
 

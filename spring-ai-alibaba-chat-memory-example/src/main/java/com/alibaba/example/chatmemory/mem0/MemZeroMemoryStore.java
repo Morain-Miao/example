@@ -24,7 +24,7 @@ import static com.alibaba.example.chatmemory.mem0.MemZeroChatMemoryAdvisor.*;
  * @date 2025/06/24 14:28
  * @description TODO
  */
-public class MemZeroMemoryStore  implements InitializingBean, VectorStore {
+public class MemZeroMemoryStore implements InitializingBean, VectorStore {
 
     private final MemZeroServiceClient mem0Client;
     private final ObjectMapper objectMapper;

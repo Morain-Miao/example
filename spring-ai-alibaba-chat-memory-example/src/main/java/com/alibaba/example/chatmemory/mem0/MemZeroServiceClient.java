@@ -17,10 +17,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 
 /**
@@ -69,16 +66,21 @@ public class MemZeroServiceClient {
      */
     public void configure(MemZeroChatMemoryProperties.Server config) {
         try {
-            config.getProject().setCustomInstructions(this.loadPrompt(config.getProject().getCustomInstructions()));
-            config.getProject().setCustomCategories(this.loadPrompt(config.getProject().getCustomCategories()));
+            if (Objects.nonNull(config.getProject())){
+                config.getProject().setCustomInstructions(this.loadPrompt(config.getProject().getCustomInstructions()));
+                config.getProject().setCustomCategories(this.loadPrompt(config.getProject().getCustomCategories()));
+            }
+            if (Objects.nonNull(config.getVectorStore())){
+                config.getGraphStore().setCustomPrompt(this.loadPrompt(config.getGraphStore().getCustomPrompt()));
+            }
             config.setCustomFactExtractionPrompt(this.loadPrompt(config.getCustomFactExtractionPrompt()));
             config.setCustomUpdateMemoryPrompt(this.loadPrompt(config.getCustomUpdateMemoryPrompt()));
-            config.getGraphStore().setCustomPrompt(this.loadPrompt(config.getGraphStore().getCustomPrompt()));
 
 
             String requestJson = objectMapper.writeValueAsString(config);
             String response = webClient.post()
                 .uri(CONFIGURE_ENDPOINT)
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(requestJson))
                 .retrieve()
                 .bodyToMono(String.class)

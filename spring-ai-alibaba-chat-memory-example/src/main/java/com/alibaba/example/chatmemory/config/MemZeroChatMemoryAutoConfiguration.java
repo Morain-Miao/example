@@ -17,7 +17,7 @@ import org.springframework.core.io.ResourceLoader;
 @AutoConfiguration(
         before = {ChatMemoryAutoConfiguration.class}
 )
-@ConditionalOnProperty(prefix = MemZeroChatMemoryProperties.GRAPH_RAG_PREFIX)
+@ConditionalOnProperty(prefix = "mem0.server", name = "version", havingValue = "v1.1")
 public class MemZeroChatMemoryAutoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(MemZeroChatMemoryAutoConfiguration.class);
@@ -45,4 +45,5 @@ public class MemZeroChatMemoryAutoConfiguration {
         //TODO 客户端初始化后，需要初始化一系列python中的配置
         return MemZeroMemoryStore.builder(client).build();
     }
+
 }
