@@ -16,7 +16,7 @@
  * @author brianxiadong
  */
 
-package org.springframework.ai.mcp.sample.server;
+package custom;
 
 import java.util.List;
 import java.time.LocalDate;

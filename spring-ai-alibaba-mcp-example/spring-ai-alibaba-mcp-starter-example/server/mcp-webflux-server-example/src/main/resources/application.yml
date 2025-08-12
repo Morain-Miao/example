@@ -27,7 +27,7 @@ spring:
       server:
         name: my-weather-server
         version: 0.0.1
-        type: ASYNC  # Recommended for reactive applications
+        type: SYNC  # Recommended for reactive applications
         # 配置 sse 的根路径，默认值为 /sse
         # 下面的最终路径为 ip:port/sse/mcp
         sse-endpoint: /sse
@@ -37,5 +37,6 @@ spring:
           resource: true
           prompt: true
           completion: true
+        enabled: true
 
 # logging.pattern.console=

@@ -23,6 +23,7 @@ spring:
             server1:
               # 实际的连接地址为：http://localhost:8080/sse/mcp
               url: http://localhost:8080/
+        type: sync
   mandatory-file-encoding: UTF-8
 
 # 调试日志

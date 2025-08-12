@@ -18,6 +18,10 @@
 
 package org.springframework.ai.mcp.sample.server;
 
+import custom.OpenMeteoService;
+import org.springframework.ai.mcp.server.autoconfigure.McpServerAutoConfiguration;
+import org.springframework.ai.mcp.server.autoconfigure.McpWebFluxServerAutoConfiguration;
+import org.springframework.ai.mcp.server.autoconfigure.McpWebMvcServerAutoConfiguration;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.function.FunctionToolCallback;
@@ -26,7 +30,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-@SpringBootApplication
+@SpringBootApplication(
+        scanBasePackages = "custom",
+        exclude = {
+                McpServerAutoConfiguration.class,
+                McpWebMvcServerAutoConfiguration.class,
+                McpWebFluxServerAutoConfiguration.class
+        }
+)
 public class McpServerApplication {
 
     public static void main(String[] args) {
