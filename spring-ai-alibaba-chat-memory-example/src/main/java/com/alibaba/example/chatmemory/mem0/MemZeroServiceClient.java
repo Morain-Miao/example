@@ -86,8 +86,12 @@ public class MemZeroServiceClient {
                 .bodyToMono(String.class)
                 .timeout(Duration.ofSeconds(this.config.getClient().getTimeoutSeconds()))
                 .block();
-            
-            logger.info("Mem0 configuration updated successfully");
+            if (StringUtils.hasText( response) && response.contains("successfully")){
+                logger.info("Mem0 configuration updated successfully");
+            }else {
+                logger.error("Failed to configure Mem0: {}", response);
+                throw new RuntimeException("Failed to configure Mem0");
+            }
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         } catch (Exception e) {

@@ -25,6 +25,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -70,6 +71,8 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 @AutoConfiguration
 @ConditionalOnClass({ WebFluxSseServerTransportProvider.class })
 @ConditionalOnMissingBean(McpServerTransportProvider.class)
+@ConditionalOnProperty(prefix = McpServerProperties.CONFIG_PREFIX, name = "enabled", havingValue = "true",
+		matchIfMissing = true)
 @Conditional(McpServerStdioDisabledCondition.class)
 public class McpWebFluxServerAutoConfiguration {
 
